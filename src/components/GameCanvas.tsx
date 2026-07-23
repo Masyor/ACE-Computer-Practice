@@ -301,17 +301,17 @@ const ITEM_TEMPLATES: Omit<CorridorItem, 'x' | 'y'>[] = [
 
 function generateModularItems(npcs: NPCData[] = []): CorridorItem[] {
   const items: CorridorItem[] = [];
-  const MIN_ITEM_2D_DIST = 160; 
-  const MIN_ITEM_X_DIST = 110;  
-  const MIN_NPC_DIST = 65;      
+  const MIN_ITEM_2D_DIST = 220; 
+  const MIN_ITEM_X_DIST = 180;  
+  const MIN_NPC_DIST = 100;      
 
-  const MIN_X = 140;
-  const MAX_X = 1140;
+  const MIN_X = 160;
+  const MAX_X = 1120;
   const MIN_Y = 320; 
   const MAX_Y = 460; 
 
-  // Random selection of 5 to 8 corridor items from pool
-  const targetCount = Math.floor(5 + Math.random() * 4); // 5, 6, 7, or 8 items
+  // Clean, uncluttered corridor: spawn 2 or 3 items max
+  const targetCount = Math.floor(2 + Math.random() * 2); // 2 or 3 items
   const templates = [...ITEM_TEMPLATES].sort(() => Math.random() - 0.5).slice(0, targetCount);
 
   templates.forEach((template) => {
@@ -539,16 +539,16 @@ function generateRandomizedNPCs(): NPCData[] {
 
   const getRandomColor = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-  const MIN_NPC_2D_DIST = 150;
-  const MIN_NPC_X_DIST = 110;
+  const MIN_NPC_2D_DIST = 220;
+  const MIN_NPC_X_DIST = 180;
 
   const MIN_X = 160;
   const MAX_X = 1120;
   const MIN_Y = 320;
   const MAX_Y = 440;
 
-  // Random selection of 5 to 8 NPCs
-  const targetCount = Math.floor(5 + Math.random() * 4); // 5, 6, 7, or 8
+  // Clean, uncluttered corridor: spawn 3 or 4 NPCs max
+  const targetCount = Math.floor(3 + Math.random() * 2); // 3 or 4 NPCs
   const selectedTemplates = [...NPC_TEMPLATES].sort(() => Math.random() - 0.5).slice(0, targetCount);
 
   const npcs: NPCData[] = [];

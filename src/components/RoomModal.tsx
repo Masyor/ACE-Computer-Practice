@@ -124,46 +124,69 @@ export const RoomModal: React.FC<RoomModalProps> = ({
 
         {/* Resources / External Links List */}
         <div className="space-y-3 overflow-y-auto pr-1 flex-1 max-h-[380px]">
-          {links.map((link, idx) => (
-            <a
-              key={idx}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => soundEngine.playSelect()}
-              className="group block bg-amber-950/70 hover:bg-amber-900/90 border-2 border-amber-800 hover:border-amber-400 p-4 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-950 rounded border border-amber-700/60 mt-0.5 group-hover:border-amber-400 transition-colors">
-                    {getIcon(link.iconType)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-pixel text-xs text-amber-200 group-hover:text-amber-100 transition-colors">
-                        {link.title}
-                      </h3>
-                      {link.badge && (
-                        <span className="font-silkscreen text-[9px] bg-amber-500 text-amber-950 px-2 py-0.5 rounded font-bold uppercase">
-                          {link.badge}
-                        </span>
-                      )}
+          {links.map((link, idx) => {
+            const isFeatured = link.badge?.toLowerCase().includes('featured') || link.badge?.includes('⭐');
+            return (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => soundEngine.playSelect()}
+                className={`group block p-4 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md ${
+                  isFeatured 
+                    ? 'bg-gradient-to-r from-amber-950/90 via-purple-950/90 to-amber-950/90 hover:from-amber-900 hover:to-purple-900 border-2 border-amber-400 hover:border-amber-300 ring-2 ring-amber-400/40 shadow-amber-500/10' 
+                    : 'bg-amber-950/70 hover:bg-amber-900/90 border-2 border-amber-800 hover:border-amber-400'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded border mt-0.5 transition-colors ${
+                      isFeatured 
+                        ? 'bg-amber-950 border-amber-400 shadow-inner' 
+                        : 'bg-slate-950 border-amber-700/60 group-hover:border-amber-400'
+                    }`}>
+                      {getIcon(link.iconType)}
                     </div>
-                    <p className="font-silkscreen text-xs text-slate-300 mt-1.5 leading-relaxed">
-                      {link.description}
-                    </p>
-                    <span className="inline-block font-vt323 text-xs text-amber-400/80 mt-1 underline">
-                      {link.url}
-                    </span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`font-pixel text-xs transition-colors ${
+                          isFeatured ? 'text-amber-100 font-bold' : 'text-amber-200 group-hover:text-amber-100'
+                        }`}>
+                          {link.title}
+                        </h3>
+                        {link.badge && (
+                          <span className={`font-silkscreen text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
+                            isFeatured
+                              ? 'bg-amber-400 text-amber-950 border border-amber-200 shadow-sm animate-pulse'
+                              : 'bg-amber-500 text-amber-950'
+                          }`}>
+                            {link.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`font-silkscreen text-xs mt-1.5 leading-relaxed ${
+                        isFeatured ? 'text-amber-100/90' : 'text-slate-300'
+                      }`}>
+                        {link.description}
+                      </p>
+                      <span className={`inline-block font-vt323 text-xs mt-1 underline ${
+                        isFeatured ? 'text-amber-300 font-bold' : 'text-amber-400/80'
+                      }`}>
+                        {link.url}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-center transition-transform group-hover:translate-x-1 shrink-0 pt-1 ${
+                    isFeatured ? 'text-amber-300' : 'text-amber-400 group-hover:text-amber-200'
+                  }`}>
+                    <ArrowRight className="w-5 h-5" />
                   </div>
                 </div>
-
-                <div className="flex items-center text-amber-400 group-hover:text-amber-200 transition-transform group-hover:translate-x-1 shrink-0 pt-1">
-                  <ArrowRight className="w-5 h-5" />
-                </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            );
+          })}
         </div>
 
         {/* Modal Footer */}

@@ -9,6 +9,13 @@ export const ROOMS: DoorRoom[] = [
     icon: 'Keyboard',
     getLinks: (): ResourceLink[] => [
       {
+        title: 'Pixel Type - 8-Bit Typing Arcade',
+        url: 'https://masyor.github.io/Pixel-Type/',
+        description: '⭐ Featured Game! Master touch-typing with custom retro 8-bit visual stages, speed drills, and real-time WPM scoring.',
+        badge: '⭐ Featured Game',
+        iconType: 'Gamepad2'
+      },
+      {
         title: 'TypingTest Trainer',
         url: 'https://www.typingtest.com/trainer/',
         description: 'Interactive touch typing course & speed exercises.',
