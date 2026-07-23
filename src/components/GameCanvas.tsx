@@ -306,7 +306,7 @@ function generateModularItems(npcs: NPCData[] = []): CorridorItem[] {
   const MIN_NPC_DIST = 100;      
 
   const MIN_X = 160;
-  const MAX_X = 1120;
+  const MAX_X = 1750;
   const MIN_Y = 320; 
   const MAX_Y = 460; 
 
@@ -543,7 +543,7 @@ function generateRandomizedNPCs(): NPCData[] {
   const MIN_NPC_X_DIST = 180;
 
   const MIN_X = 160;
-  const MAX_X = 1120;
+  const MAX_X = 1750;
   const MIN_Y = 320;
   const MAX_Y = 440;
 
@@ -987,21 +987,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const doorW = 64;
       const doorH = 96;
 
-      // Welcome Carpet in front of door
-      ctx.fillStyle = room.color;
-      ctx.globalAlpha = 0.5;
-      ctx.fillRect(doorX - 12, doorY + doorH, doorW + 24, 32);
-      ctx.globalAlpha = 1.0;
-      ctx.strokeStyle = '#d4af37';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(doorX - 12, doorY + doorH, doorW + 24, 32);
-
-      // Carpet Text
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '8px "Press Start 2P"';
-      ctx.textAlign = 'center';
-      ctx.fillText(room.name.split(' ')[1] || 'ROOM', doorX + doorW / 2, doorY + doorH + 20);
-
       // Outer Frame
       ctx.fillStyle = '#5a3a1e';
       ctx.fillRect(doorX - 6, doorY - 6, doorW + 12, doorH + 6);
@@ -1026,6 +1011,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fill();
 
       // Sign Plate Above Door
+      const signText = (room.signLabel || room.name).toUpperCase();
       ctx.fillStyle = room.color;
       ctx.fillRect(doorX - 24, doorY - 40, doorW + 48, 28);
       ctx.strokeStyle = '#fef08a';
@@ -1035,7 +1021,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillStyle = '#ffffff';
       ctx.font = '8px "Press Start 2P"';
       ctx.textAlign = 'center';
-      ctx.fillText(`DOOR ${room.id}`, doorX + doorW / 2, doorY - 22);
+      ctx.fillText(signText, doorX + doorW / 2, doorY - 22);
     });
 
     // 5. Draw Modular Corridor Items

@@ -20,6 +20,7 @@ export interface ResourceLink {
 export interface DoorRoom {
   id: number;
   name: string;
+  signLabel?: string;
   subtitle: string;
   color: string;
   icon: string;

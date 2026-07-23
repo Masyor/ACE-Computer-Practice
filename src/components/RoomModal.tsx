@@ -54,8 +54,11 @@ export const RoomModal: React.FC<RoomModalProps> = ({
     switch (room.icon) {
       case 'Keyboard': return <Keyboard className="w-6 h-6 text-purple-300" />;
       case 'GraduationCap': return <GraduationCap className="w-6 h-6 text-red-300" />;
-      case 'Headphones': return <Headphones className="w-6 h-6 text-emerald-300" />;
       case 'Tv': return <Tv className="w-6 h-6 text-sky-300" />;
+      case 'Headphones': return <Headphones className="w-6 h-6 text-emerald-300" />;
+      case 'Sparkles': return <Sparkles className="w-6 h-6 text-amber-300" />;
+      case 'BookOpen': return <BookOpen className="w-6 h-6 text-blue-300" />;
+      case 'FileText': return <FileText className="w-6 h-6 text-yellow-300" />;
       default: return <GraduationCap className="w-6 h-6 text-amber-300" />;
     }
   };

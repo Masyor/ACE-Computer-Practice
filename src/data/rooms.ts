@@ -4,6 +4,7 @@ export const ROOMS: DoorRoom[] = [
   {
     id: 1,
     name: 'The Typing Gym',
+    signLabel: 'Typing',
     subtitle: 'Build touch typing speed, accuracy, and finger dexterity',
     color: '#8b5cf6', // Purple
     icon: 'Keyboard',
@@ -48,10 +49,28 @@ export const ROOMS: DoorRoom[] = [
   {
     id: 2,
     name: 'The Exam Hall',
-    subtitle: 'Official Academic IELTS Mock Tests & Reading Simulations',
+    signLabel: 'Exam',
+    subtitle: 'Official Academic IELTS Mock Tests & Practice Drills',
     color: '#e11d48', // Crimson Red
     icon: 'GraduationCap',
     getLinks: (stage: StageLevel): ResourceLink[] => {
+      const generalExamLinks: ResourceLink[] = [
+        {
+          title: 'Mini-IELTS Practice Vault',
+          url: 'https://mini-ielts.com/',
+          description: 'Free comprehensive collection of authentic IELTS practice test sets.',
+          badge: 'Top Portal',
+          iconType: 'Zap'
+        },
+        {
+          title: 'IELTS Online Tests Portal',
+          url: 'https://ieltsonlinetests.com/',
+          description: 'Full-length computer-delivered mock tests with instant score analysis.',
+          badge: 'Mock Exam',
+          iconType: 'Globe'
+        }
+      ];
+
       if (stage === 'GEP 11A') {
         return [
           {
@@ -60,7 +79,8 @@ export const ROOMS: DoorRoom[] = [
             description: 'GEP 11A Standard Academic Practice Tests & Solutions.',
             badge: 'Stage GEP 11A',
             iconType: 'FileText'
-          }
+          },
+          ...generalExamLinks
         ];
       } else if (stage === 'GEP 11B') {
         return [
@@ -70,7 +90,8 @@ export const ROOMS: DoorRoom[] = [
             description: 'GEP 11B Advanced Practice Modules & Timer Drills.',
             badge: 'Stage GEP 11B',
             iconType: 'FileText'
-          }
+          },
+          ...generalExamLinks
         ];
       } else {
         // GEP 12
@@ -82,19 +103,13 @@ export const ROOMS: DoorRoom[] = [
             badge: 'Stage GEP 12',
             iconType: 'FileText'
           },
+          ...generalExamLinks,
           {
             title: 'EngNovate IELTS Prep Platform',
             url: 'https://engnovate.com/ielts/',
             description: 'Interactive IELTS practice tests & instant AI feedback.',
             badge: 'GEP 12 Extra',
             iconType: 'Sparkles'
-          },
-          {
-            title: 'Mini-IELTS Reading Vault',
-            url: 'https://mini-ielts.com/reading',
-            description: 'Short targeted reading passages & answer keys.',
-            badge: 'Reading Hub',
-            iconType: 'BookMarked'
           }
         ];
       }
@@ -102,16 +117,62 @@ export const ROOMS: DoorRoom[] = [
   },
   {
     id: 3,
-    name: 'The Listening Café',
-    subtitle: 'Relax, listen to English audio tracks, & type lyrics',
+    name: 'Tips',
+    signLabel: 'Tips',
+    subtitle: 'Expert video tutorials, exam strategies, & test taker guides',
+    color: '#0284c7', // Sky Blue
+    icon: 'Tv',
+    getLinks: (): ResourceLink[] => [
+      {
+        title: 'IELTS by IDP Official Channel',
+        url: 'https://www.youtube.com/c/ieltsbyidp',
+        description: 'Official video guides, band score tips & live Q&A webinars.',
+        badge: 'Official Video',
+        iconType: 'Youtube'
+      },
+      {
+        title: 'IELTS Advantage Prep Strategies',
+        url: 'https://www.ieltsadvantage.com/',
+        description: 'Comprehensive band 7+ strategies for all four modules.',
+        badge: 'Top Guide',
+        iconType: 'Zap'
+      },
+      {
+        title: 'Take IELTS by British Council',
+        url: 'https://takeielts.britishcouncil.org/take-ielts/prepare',
+        description: 'Official study advice, test format advice & candidate tips.',
+        badge: 'Official',
+        iconType: 'BookMarked'
+      }
+    ]
+  },
+  {
+    id: 4,
+    name: 'Listening',
+    signLabel: 'Listening',
+    subtitle: 'Exam audio clips, accent training, lyrics typing & rhythm drills',
     color: '#059669', // Emerald Green
     icon: 'Headphones',
     getLinks: (): ResourceLink[] => [
       {
+        title: 'Mini-IELTS Listening Practice',
+        url: 'https://mini-ielts.com/listening',
+        description: 'Real exam audio clips, accent training, & instant transcripts.',
+        badge: 'Exam Audio',
+        iconType: 'Volume2'
+      },
+      {
+        title: 'IELTS Online Tests - Listening',
+        url: 'https://ieltsonlinetests.com/listening-practice-tests',
+        description: 'Full audio listening test simulations with computer-style interface.',
+        badge: 'Mock Tests',
+        iconType: 'Headphones'
+      },
+      {
         title: 'LyricsTyping',
         url: 'https://lyricstyping.com/',
-        description: 'Type along to popular songs to train rhythm & ear.',
-        badge: 'Music',
+        description: 'Type along to popular songs to train rhythm & ear recognition.',
+        badge: 'Music Drill',
         iconType: 'Music'
       },
       {
@@ -120,45 +181,30 @@ export const ROOMS: DoorRoom[] = [
         description: 'Fast music-based transcription practice.',
         badge: 'Rhythm',
         iconType: 'Radio'
-      },
-      {
-        title: 'Mini-IELTS Listening Practice',
-        url: 'https://mini-ielts.com/listening',
-        description: 'Real exam audio clips, accent training, & transcripts.',
-        badge: 'Exam Audio',
-        iconType: 'Volume2'
-      }
-    ]
-  },
-  {
-    id: 4,
-    name: 'The Strategy Media Center',
-    subtitle: 'Expert video tutorials, exam tips, & test taker guides',
-    color: '#0284c7', // Sky Blue
-    icon: 'Tv',
-    getLinks: (): ResourceLink[] => [
-      {
-        title: 'IELTS by IDP Official Channel',
-        url: 'https://www.youtube.com/c/ieltsbyidp',
-        description: 'Official video guides, band score tips & live Q&A webinars.',
-        badge: 'Official YouTube',
-        iconType: 'Youtube'
       }
     ]
   },
   {
     id: 5,
-    name: 'The Speaking Studio',
+    name: 'Speaking',
+    signLabel: 'Speaking',
     subtitle: 'Interactive pronunciation, cue card prompts & fluency drills',
     color: '#d97706', // Warm Amber/Orange
     icon: 'Sparkles',
     getLinks: (): ResourceLink[] => [
       {
-        title: 'IELTS Speaking Assistant & Cue Cards',
+        title: 'Mini-IELTS Speaking Vault',
         url: 'https://mini-ielts.com/speaking',
-        description: 'Practice real exam Part 1, 2, and 3 cue card prompts.',
-        badge: 'Speaking',
+        description: 'Practice real exam Part 1, 2, and 3 cue card prompts & model answers.',
+        badge: 'Cue Cards',
         iconType: 'Sparkles'
+      },
+      {
+        title: 'IELTS Online Tests - Speaking',
+        url: 'https://ieltsonlinetests.com/speaking-practice-tests',
+        description: 'Interactive speaking simulator with sample recordings & candidate responses.',
+        badge: 'Simulations',
+        iconType: 'Volume2'
       },
       {
         title: 'Essential English Vocabulary Review',
@@ -166,6 +212,68 @@ export const ROOMS: DoorRoom[] = [
         description: 'Targeted academic vocabulary & pronunciation guides.',
         badge: 'Vocab',
         iconType: 'BookOpen'
+      }
+    ]
+  },
+  {
+    id: 6,
+    name: 'Reading',
+    signLabel: 'Reading',
+    subtitle: 'Passage speed drills, question types, & timed reading practice',
+    color: '#2563eb', // Royal Blue
+    icon: 'BookOpen',
+    getLinks: (): ResourceLink[] => [
+      {
+        title: 'Mini-IELTS Reading Vault',
+        url: 'https://mini-ielts.com/reading',
+        description: 'Short targeted reading passages & answer keys for quick skill drills.',
+        badge: 'Top Practice',
+        iconType: 'BookMarked'
+      },
+      {
+        title: 'IELTS Online Tests - Reading',
+        url: 'https://ieltsonlinetests.com/reading-practice-tests',
+        description: 'Computer-delivered IELTS reading mock exams with explanations.',
+        badge: 'Mock Tests',
+        iconType: 'BookOpen'
+      },
+      {
+        title: 'IELTS Flex Reading Drills',
+        url: 'https://ieltsflex.com/',
+        description: 'Interactive reading passages with question-by-question breakdown.',
+        badge: 'Interactive',
+        iconType: 'Cpu'
+      }
+    ]
+  },
+  {
+    id: 7,
+    name: 'Writing',
+    signLabel: 'Writing',
+    subtitle: 'Task 1 data descriptions & Task 2 essay prompts, templates & samples',
+    color: '#ca8a04', // Golden Yellow
+    icon: 'FileText',
+    getLinks: (): ResourceLink[] => [
+      {
+        title: 'Mini-IELTS Writing Vault',
+        url: 'https://mini-ielts.com/writing',
+        description: 'Real IELTS Task 1 & Task 2 writing topics with Band 8/9 model essays.',
+        badge: 'Prompts & Samples',
+        iconType: 'FileText'
+      },
+      {
+        title: 'IELTS Online Tests - Writing',
+        url: 'https://ieltsonlinetests.com/writing-practice-tests',
+        description: 'Computer-delivered writing practice with timer & word counter.',
+        badge: 'Simulations',
+        iconType: 'FileText'
+      },
+      {
+        title: 'IELTS Advantage Writing Guide',
+        url: 'https://www.ieltsadvantage.com/writing/',
+        description: 'Step-by-step essay structure guides, cohesion tips & Band 9 vocabulary.',
+        badge: 'Templates & Guides',
+        iconType: 'Sparkles'
       }
     ]
   }

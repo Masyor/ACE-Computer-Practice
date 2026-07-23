@@ -12,7 +12,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
 
   const [player, setPlayer] = useState<PlayerCustomization>({
-    name: 'Alex',
+    name: 'Matt',
     stage: 'GEP 11A',
     shirtColor: '#3b82f6',
     hairColor: '#fde047',

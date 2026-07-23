@@ -12,7 +12,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
   const [typedText, setTypedText] = useState('');
   const [step, setStep] = useState<'text' | 'name' | 'stage' | 'avatar' | 'confirm'>('text');
   
-  const [name, setName] = useState('Alex');
+  const [name, setName] = useState('Matt');
   const [stage, setStage] = useState<StageLevel>('GEP 11A');
   const [shirtColor, setShirtColor] = useState('#3b82f6'); // Blue
   const [hairColor, setHairColor] = useState('#fde047'); // Yellow/Blonde
@@ -54,7 +54,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
   const handleFinish = () => {
     soundEngine.playDoorChime();
     onComplete({
-      name: name.trim() || 'Student',
+      name: name.trim() || 'Matt',
       stage,
       shirtColor,
       hairColor,
