@@ -6,7 +6,13 @@ import { MoveUp, MoveDown, MoveLeft, MoveRight, ArrowRight, ArrowLeft } from 'lu
 
 interface GameCanvasProps {
   playerCustomization: PlayerCustomization;
+  coins: number;
+  catPetTimer: number;
+  speedBoostTimer: number;
+  onAddCoins: (amount: number) => void;
   onOpenRoom: (room: DoorRoom) => void;
+  onOpenQuiz: () => void;
+  onOpenVending: () => void;
   isPaused: boolean;
 }
 
@@ -367,7 +373,37 @@ function generateModularItems(npcs: NPCData[] = []): CorridorItem[] {
   // Sort items by Y position so items higher up render behind items lower down
   items.sort((a, b) => a.y - b.y);
 
-  return items;
+  // Permanent Vending Machine & Mini-Quiz Kiosk
+  const permanentItems: CorridorItem[] = [
+    {
+      id: 'item_vending',
+      name: 'Vending Machine',
+      type: 'vending_machine',
+      x: 830,
+      y: 135,
+      width: 44,
+      height: 62,
+      color: '#1e293b',
+      icon: '🥤',
+      tipText: "🥤 Vending Machine! Insert 1 Coin to vend snacks & band boost tips!",
+      isSpecialModal: true
+    },
+    {
+      id: 'item_quiz_kiosk',
+      name: 'Mini-Quiz Kiosk',
+      type: 'quiz_kiosk',
+      x: 1090,
+      y: 135,
+      width: 42,
+      height: 60,
+      color: '#581c87',
+      icon: '🐱',
+      tipText: "🐱 IELTS Mini-Quiz Kiosk! Score 3+ out of 5 to recruit Whiskers the Pixel Cat!",
+      isSpecialModal: true
+    }
+  ];
+
+  return [...permanentItems, ...items];
 }
 
 // Function to generate slightly randomized NPC positions & outfits per session
@@ -628,11 +664,28 @@ function generateRandomizedNPCs(): NPCData[] {
 
 export const GameCanvas: React.FC<GameCanvasProps> = ({
   playerCustomization,
+  coins,
+  catPetTimer,
+  speedBoostTimer,
+  onAddCoins,
   onOpenRoom,
+  onOpenQuiz,
+  onOpenVending,
   isPaused
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Floor Coins State
+  const floorCoinsRef = useRef<Array<{ id: string; x: number; y: number; active: boolean; respawnTimer: number }>>([
+    { id: 'coin_1', x: 310, y: 340, active: true, respawnTimer: 0 },
+    { id: 'coin_2', x: 570, y: 390, active: true, respawnTimer: 0 },
+    { id: 'coin_3', x: 1350, y: 350, active: true, respawnTimer: 0 },
+    { id: 'coin_4', x: 1610, y: 410, active: true, respawnTimer: 0 }
+  ]);
+
+  const catPosRef = useRef({ x: 90, y: 360 });
+  const coinParticlesRef = useRef<Array<{ x: number; y: number; text: string; life: number }>>([]);
 
   // Randomized NPCs & Items on Initialization
   const npcsRef = useRef<NPCData[]>(generateRandomizedNPCs());
@@ -717,10 +770,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const currentItem = nearbyItemRef.current;
       const currentRoom = nearbyRoomRef.current;
 
-      // Interact with Item (Console or Modular Items)
+      // Interact with Item (Vending, Quiz Kiosk, Console or Modular Items)
       if ((key === 'e' || key === ' ') && currentItem && !isPaused) {
         soundEngine.playSelect();
-        if (currentItem.isSpecialModal) {
+        if (currentItem.type === 'vending_machine') {
+          onOpenVending();
+        } else if (currentItem.type === 'quiz_kiosk') {
+          onOpenQuiz();
+        } else if (currentItem.isSpecialModal) {
           setShowConsoleModal(true);
         } else {
           eventBannerRef.current = {
@@ -767,6 +824,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
     // Movement Physics
     if (!isPaused) {
+      p.speed = speedBoostTimer > 0 ? 4.8 : 3.2;
       p.isMoving = false;
       const combinedKeys = { ...keysRef.current, ...touchKeysRef.current };
 
@@ -813,6 +871,30 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (p.x > maxX) p.x = maxX;
       if (p.y < minY) p.y = minY;
       if (p.y > maxY) p.y = maxY;
+
+      // Check Floor Coins Pickup Collision
+      const now = Date.now();
+      floorCoinsRef.current.forEach(c => {
+        if (!c.active) {
+          if (now > c.respawnTimer) {
+            c.active = true;
+          }
+        } else {
+          const dist = Math.hypot((p.x + p.width / 2) - c.x, (p.y + p.height / 2) - c.y);
+          if (dist < 28) {
+            c.active = false;
+            c.respawnTimer = now + 12000;
+            soundEngine.playCoin();
+            onAddCoins(1);
+            coinParticlesRef.current.push({
+              x: c.x,
+              y: c.y,
+              text: '+1 COIN 🪙',
+              life: 45
+            });
+          }
+        }
+      });
 
       // Step Sound & Animation Frame
       if (p.isMoving) {
@@ -886,7 +968,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         const itemCenterX = item.x + item.width / 2;
         const itemCenterY = item.y + item.height / 2;
         const dist = Math.hypot(pCenterX - itemCenterX, pCenterY - itemCenterY);
-        if (dist < 55) {
+        const maxDist = (item.type === 'vending_machine' || item.type === 'quiz_kiosk') ? 78 : 55;
+        if (dist < maxDist) {
           foundItem = item;
         }
       });
@@ -961,8 +1044,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.stroke();
     }
 
-    // 3. Draw Decorative Lantern Sconces spaced along hallway
-    for (let wx = 90; wx < worldWidth; wx += 220) {
+    // 3. Draw Decorative Lantern Sconces spaced equidistant between doors
+    const doorPositions = ROOMS.map((room, idx) => getRoomWorldPosition(room, idx, ROOMS.length));
+    const lightPositions: number[] = [];
+    if (doorPositions.length > 0) {
+      // First light before Door 0 (halfway between start 0 and Door 0)
+      lightPositions.push(Math.round(doorPositions[0] / 2));
+      // Lights equidistant between adjacent pairs of doors
+      for (let i = 0; i < doorPositions.length - 1; i++) {
+        lightPositions.push(Math.round((doorPositions[i] + doorPositions[i + 1]) / 2));
+      }
+      // Last light after final Door (halfway between last door and worldWidth)
+      lightPositions.push(Math.round((doorPositions[doorPositions.length - 1] + worldWidth) / 2));
+    }
+
+    lightPositions.forEach(wx => {
       // Lantern Glow
       const grad = ctx.createRadialGradient(wx, 60, 5, wx, 60, 45);
       grad.addColorStop(0, 'rgba(254, 240, 138, 0.4)');
@@ -977,7 +1073,39 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillRect(wx - 6, 50, 12, 20);
       ctx.fillStyle = '#fef08a';
       ctx.fillRect(wx - 4, 52, 8, 12);
-    }
+    });
+
+    // 3.5 Draw Floor Collectible Coins 🪙
+    const now = Date.now();
+    floorCoinsRef.current.forEach(c => {
+      if (c.active) {
+        const floatY = Math.sin((now + c.x * 2) / 180) * 2.5;
+        const cy = c.y + floatY;
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(c.x, c.y + 6, 7, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Outer Gold Coin
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.arc(c.x, cy, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner Shimmer
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(c.x - 1, cy - 1, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#a16207';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('¢', c.x, cy + 3);
+      }
+    });
 
     // 4. Draw Modular Doors
     ROOMS.forEach((room, idx) => {
@@ -1037,7 +1165,84 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fill();
 
       // Render Item Body
-      if (item.type === 'game_console') {
+      if (item.type === 'vending_machine') {
+        // Vending Machine Chassis
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(ix, iy, item.width, item.height);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(ix, iy, item.width, item.height);
+
+        // Header
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(ix + 4, iy + 4, item.width - 8, 12);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('SNACKS', ix + item.width / 2, iy + 13);
+
+        // Glass Front Display
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.fillRect(ix + 6, iy + 18, item.width - 12, 26);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(ix + 6, iy + 18, item.width - 12, 26);
+
+        // Cans & Items inside
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(ix + 10, iy + 22, 5, 8);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(ix + 18, iy + 22, 5, 8);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(ix + 26, iy + 22, 5, 8);
+
+        ctx.fillStyle = '#8b5cf6';
+        ctx.fillRect(ix + 10, iy + 32, 5, 8);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(ix + 18, iy + 32, 5, 8);
+
+        // Keypad & Tray
+        ctx.fillStyle = '#d4af37';
+        ctx.fillRect(ix + 6, iy + 47, 10, 8);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(ix + 20, iy + 47, 18, 8);
+      } else if (item.type === 'quiz_kiosk') {
+        // Arcade Quiz Terminal
+        ctx.fillStyle = '#581c87';
+        ctx.fillRect(ix, iy, item.width, item.height);
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(ix, iy, item.width, item.height);
+
+        // Marquee
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(ix + 4, iy + 4, item.width - 8, 12);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('QUIZ', ix + item.width / 2, iy + 13);
+
+        // Green Screen
+        ctx.fillStyle = '#052e16';
+        ctx.fillRect(ix + 6, iy + 18, item.width - 12, 22);
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(ix + 6, iy + 18, item.width - 12, 22);
+
+        ctx.fillStyle = '#4ade80';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🐱 🐾', ix + item.width / 2, iy + 33);
+
+        // Controls
+        ctx.fillStyle = '#1e1b4b';
+        ctx.fillRect(ix + 4, iy + 43, item.width - 8, 12);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(ix + 8, iy + 45, 4, 4);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(ix + 20, iy + 46, 3, 3);
+        ctx.fillRect(ix + 26, iy + 46, 3, 3);
+      } else if (item.type === 'game_console') {
         ctx.fillStyle = '#6d28d9'; // Purple Game Boy
         ctx.fillRect(ix, iy, item.width, item.height);
         ctx.fillStyle = '#1e1b4b';
@@ -1140,6 +1345,75 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       playerCustomization.hairStyle
     );
 
+    // 7.5 Draw Pixel Cat Companion "Whiskers" Following Player
+    if (catPetTimer > 0) {
+      const catXRef = catPosRef.current;
+      const targetCatX = p.dir === 'right' ? p.x - 28 : (p.dir === 'left' ? p.x + 36 : p.x - 14);
+      const targetCatY = p.y + 14;
+
+      catXRef.x += (targetCatX - catXRef.x) * 0.16;
+      catXRef.y += (targetCatY - catXRef.y) * 0.16;
+
+      const cx = catXRef.x;
+      const cy = catXRef.y;
+      const tailWiggle = Math.sin(now / 120) * 3;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(cx + 9, cy + 12, 9, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Body (Ginger Fur)
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(cx, cy, 18, 11);
+
+      // Chest Patch
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(cx + 3, cy + 4, 8, 5);
+
+      // Head
+      const headX = p.dir === 'left' ? cx - 4 : cx + 12;
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(headX, cy - 6, 10, 10);
+
+      // Ears
+      ctx.fillRect(headX, cy - 10, 3, 4);
+      ctx.fillRect(headX + 7, cy - 10, 3, 4);
+      ctx.fillStyle = '#f472b6'; // Pink inner ear
+      ctx.fillRect(headX + 1, cy - 9, 1, 2);
+      ctx.fillRect(headX + 8, cy - 9, 1, 2);
+
+      // Eyes & Nose
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(headX + 2, cy - 3, 2, 2);
+      ctx.fillRect(headX + 6, cy - 3, 2, 2);
+      ctx.fillStyle = '#f472b6';
+      ctx.fillRect(headX + 4, cy - 1, 2, 1);
+
+      // Tail
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(cx - 4, cy + 2 + tailWiggle, 5, 3);
+
+      // Whiskers Overhead Label
+      ctx.fillStyle = '#4ade80';
+      ctx.font = '7px "Press Start 2P"';
+      ctx.textAlign = 'center';
+      ctx.fillText(`🐾 WHISKERS (${catPetTimer}s)`, cx + 9, cy - 14);
+
+      // Cute Purr Bubble
+      if (Math.floor(now / 3500) % 3 === 0) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+        ctx.fillRect(cx - 20, cy - 32, 60, 14);
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cx - 20, cy - 32, 60, 14);
+        ctx.fillStyle = '#fef08a';
+        ctx.font = '8px sans-serif';
+        ctx.fillText('Purr... Meow!', cx + 10, cy - 22);
+      }
+    }
+
     // 8. Draw Random Event: Pixel Cat Dash 🐱
     const catEvt = eventCatRef.current;
     if (catEvt.active) {
@@ -1157,6 +1431,20 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.font = '7px "Press Start 2P"';
       ctx.fillText('🐾 Choco Dashed By!', catEvt.x + 10, catEvt.y - 12);
     }
+
+    // 8.5 Draw Floating Particle Texts (+1 COIN 🪙)
+    coinParticlesRef.current.forEach(pt => {
+      if (pt.life > 0) {
+        pt.y -= 0.6;
+        pt.life -= 1;
+        const opacity = Math.min(1, pt.life / 30);
+        ctx.fillStyle = `rgba(254, 240, 138, ${opacity})`;
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText(pt.text, pt.x, pt.y);
+      }
+    });
+    coinParticlesRef.current = coinParticlesRef.current.filter(pt => pt.life > 0);
 
     // 9. --- GUARANTEED TOP LAYER: SPEECH BUBBLES ALWAYS RENDERED ON TOP OF EVERYTHING ELSE ---
     const currentActiveNPC = nearbyNPCRef.current;
@@ -1275,7 +1563,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     if (isPaused) return;
     if (nearbyItemRef.current) {
       soundEngine.playSelect();
-      if (nearbyItemRef.current.isSpecialModal) {
+      if (nearbyItemRef.current.type === 'vending_machine') {
+        onOpenVending();
+      } else if (nearbyItemRef.current.type === 'quiz_kiosk') {
+        onOpenQuiz();
+      } else if (nearbyItemRef.current.isSpecialModal) {
         setShowConsoleModal(true);
       } else {
         eventBannerRef.current = {
