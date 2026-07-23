@@ -1,0 +1,6 @@
+{
+  "name": "ACE Computer Practice",
+  "description": "A 16-bit retro RPG navigation hub helping you prepare for the computer delivered IELTS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
