@@ -25,11 +25,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     setTypedText('');
     const timer = setInterval(() => {
       if (index < fullText.length) {
-        setTypedText(prev => prev + fullText.charAt(index));
+        setTypedText(fullText.slice(0, index + 1));
         soundEngine.playTextBlip();
         index++;
       } else {
         clearInterval(timer);
+        setTypedText(fullText);
         setTimeout(() => setStep('name'), 600);
       }
     }, 45);
@@ -75,7 +76,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
         {/* Dialogue Box Area */}
         <div className="min-h-[70px] bg-amber-950/80 border-2 border-amber-800 p-4 rounded mb-6 flex items-center">
           <p className="font-pixel text-sm md:text-base text-amber-200 leading-relaxed tracking-wide">
-            {typedText}
+            {step === 'text' ? typedText : fullText}
             {step === 'text' && <span className="inline-block w-2 h-4 bg-amber-300 ml-1 animate-pulse" />}
           </p>
         </div>
@@ -85,7 +86,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
           <form onSubmit={handleNameSubmit} className="space-y-4 animate-fadeIn">
             <div className="flex items-center gap-2 text-amber-300 font-silkscreen text-sm md:text-base">
               <User className="w-4 h-4" />
-              <label htmlFor="student-name-input">PROMPT 1: What is your name?</label>
+              <label htmlFor="student-name-input">What is your name?</label>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3">
@@ -115,7 +116,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
           <div className="space-y-4 animate-fadeIn">
             <div className="flex items-center gap-2 text-amber-300 font-silkscreen text-sm md:text-base">
               <GraduationCap className="w-4 h-4" />
-              <span>PROMPT 2: What level stage are you tackling today?</span>
+              <span>What level are you studying?</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

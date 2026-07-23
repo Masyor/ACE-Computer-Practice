@@ -215,7 +215,7 @@ const ITEM_TEMPLATES: Omit<CorridorItem, 'x' | 'y'>[] = [
     height: 18,
     color: '#b45309',
     icon: '☕',
-    tipText: "☕ Hot Espresso! Boosts Reading speed & keyword scanning accuracy!"
+    tipText: "☕ Hot Espresso! It might help you concentrate!"
   },
   {
     id: 'item_cat',
@@ -225,7 +225,7 @@ const ITEM_TEMPLATES: Omit<CorridorItem, 'x' | 'y'>[] = [
     height: 24,
     color: '#eab308',
     icon: '🐱',
-    tipText: "🐱 Waving Lucky Cat: 'Good luck for Speaking Part 3 fluency!'"
+    tipText: "🐱 Waving Lucky Cat: 'Remember that fluency is an important part of speaking!'"
   },
   {
     id: 'item_scroll',
@@ -255,7 +255,7 @@ const ITEM_TEMPLATES: Omit<CorridorItem, 'x' | 'y'>[] = [
     height: 20,
     color: '#ec4899',
     icon: '🎧',
-    tipText: "🎧 Noise-Canceling Headset: 'Adjust volume during trial sound check!'"
+    tipText: "🎧 Noise-Canceling Headset: 'Use the example at the start of the listening test to adjust your volume.'"
   },
   {
     id: 'item_pen',
@@ -275,7 +275,7 @@ const ITEM_TEMPLATES: Omit<CorridorItem, 'x' | 'y'>[] = [
     height: 22,
     color: '#ef4444',
     icon: '⚡',
-    tipText: "⚡ Power Drink: 'Pace yourself in the 60-minute Reading module!'"
+    tipText: "⚡ Power Drink: 'Pace yourself in the 60-minute Reading module. Don't run out of energy!'"
   },
   {
     id: 'item_highlighter',
@@ -285,7 +285,7 @@ const ITEM_TEMPLATES: Omit<CorridorItem, 'x' | 'y'>[] = [
     height: 18,
     color: '#fde047',
     icon: '🖍️',
-    tipText: "🖍️ Bright Highlighter: 'Highlight key dates and numbers in Reading passages!'"
+    tipText: "🖍️ Bright Highlighter: 'Highlight key information in Reading passages!'"
   },
   {
     id: 'item_watch',
@@ -390,9 +390,9 @@ const NPC_TEMPLATES: Omit<NPCData, 'x' | 'y' | 'minX' | 'maxX' | 'currentDialogu
       dir: 'left'
     },
     dialogues: [
-      "💬 Emma: 'For Speaking Part 2, use your 1-minute prep to outline 3 main points!'",
+      "💬 Emma: 'For Speaking Part 2, use your 1-minute prep to make notes!'",
       "💬 Lucas: 'And don't panic if you make a mistake—just self-correct smoothly!'",
-      "💬 Emma: 'Use connective words like Furthermore, Consequently, and On the other hand!'"
+      "💬 Emma: 'Use a variety of connective words like furthermore, consequently, and on the other hand!'"
     ]
   },
   {
@@ -460,7 +460,7 @@ const NPC_TEMPLATES: Omit<NPCData, 'x' | 'y' | 'minX' | 'maxX' | 'currentDialogu
     spriteStyle: 'modern',
     hairStyle: 'ponytail',
     dialogues: [
-      "🧋 Vannak: 'Boba break! Less is for uncountable nouns; fewer is for countable items!'",
+      "🧋 Vannak: 'Boba break! Remember to relax before your test'",
       "🧋 Vannak: 'Check out IDP Official channel in Door 4 for band score breakdowns!'"
     ]
   },
@@ -475,7 +475,7 @@ const NPC_TEMPLATES: Omit<NPCData, 'x' | 'y' | 'minX' | 'maxX' | 'currentDialogu
     hairStyle: 'bob',
     hasCat: true,
     dialogues: [
-      "🐱 Kanya: 'Meow! Pixel Cat says don't forget your passport on test day!'",
+      "🐱 Kanya: 'Meow! Pixel Cat says don't forget your passport or ID on test day!'",
       "🐾 Kanya: 'Take 5-minute typing breaks to keep your wrist relaxed!'"
     ]
   },
