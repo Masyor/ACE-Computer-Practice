@@ -385,7 +385,7 @@ function generateModularItems(npcs: NPCData[] = []): CorridorItem[] {
       height: 62,
       color: '#1e293b',
       icon: '🥤',
-      tipText: "🥤 Vending Machine! Insert 1 Coin to vend snacks & band boost tips!",
+      tipText: "🥤 Vending Machine! Insert 10 Coins to vend snacks & band boost tips!",
       isSpecialModal: true
     },
     {
@@ -398,7 +398,7 @@ function generateModularItems(npcs: NPCData[] = []): CorridorItem[] {
       height: 60,
       color: '#581c87',
       icon: '🐱',
-      tipText: "🐱 IELTS Mini-Quiz Kiosk! Score 3+ out of 5 to recruit Whiskers the Pixel Cat!",
+      tipText: "🐱 IELTS Mini-Quiz Kiosk! Score 2+ out of 3 to recruit Whiskers the Pixel Cat!",
       isSpecialModal: true
     }
   ];
@@ -796,6 +796,18 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       else if ((key === 'e' || key === ' ') && currentRoom && !isPaused) {
         handleOpenRoom(currentRoom);
       }
+
+      // Pet Whiskers Key 🐾
+      if (key === 'p' && catPetTimer > 0 && !isPaused) {
+        soundEngine.playMeow();
+        const catXRef = catPosRef.current;
+        coinParticlesRef.current.push({
+          x: catXRef.x + 9,
+          y: catXRef.y - 12,
+          text: '💖 PURR! 🐾',
+          life: 50
+        });
+      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -810,7 +822,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isPaused, handleOpenRoom]);
+  }, [isPaused, handleOpenRoom, catPetTimer]);
 
   // Main Render & Physics Game Loop
   const render = useCallback(() => {
@@ -1399,18 +1411,19 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillStyle = '#4ade80';
       ctx.font = '7px "Press Start 2P"';
       ctx.textAlign = 'center';
-      ctx.fillText(`🐾 WHISKERS (${catPetTimer}s)`, cx + 9, cy - 14);
+      ctx.fillText('🐾 WHISKERS', cx + 9, cy - 14);
 
       // Cute Purr Bubble
-      if (Math.floor(now / 3500) % 3 === 0) {
+      if (Math.floor(now / 2500) % 3 === 0) {
+        const bubbleMsg = Math.floor(now / 5000) % 2 === 0 ? 'Purr... Meow! 🐾' : 'Press P to pet! 💖';
         ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-        ctx.fillRect(cx - 20, cy - 32, 60, 14);
+        ctx.fillRect(cx - 24, cy - 32, 68, 14);
         ctx.strokeStyle = '#4ade80';
         ctx.lineWidth = 1;
-        ctx.strokeRect(cx - 20, cy - 32, 60, 14);
+        ctx.strokeRect(cx - 24, cy - 32, 68, 14);
         ctx.fillStyle = '#fef08a';
-        ctx.font = '8px sans-serif';
-        ctx.fillText('Purr... Meow!', cx + 10, cy - 22);
+        ctx.font = 'bold 8px sans-serif';
+        ctx.fillText(bubbleMsg, cx + 10, cy - 22);
       }
     }
 

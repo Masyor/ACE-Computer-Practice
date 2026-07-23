@@ -87,7 +87,6 @@ export default function App() {
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
         onLogout={handleLogout}
-        onOpenQuiz={() => setShowQuizModal(true)}
       />
 
       {/* Main Game Screen */}
@@ -133,7 +132,7 @@ export default function App() {
         {showVendingModal && (
           <VendingModal
             coins={coins}
-            onDeductCoin={() => handleAddCoins(-1)}
+            onDeductCoin={() => handleAddCoins(-10)}
             onAddCoin={(amt) => handleAddCoins(amt)}
             onTriggerSpeedBoost={handleTriggerSpeedBoost}
             onClose={() => setShowVendingModal(false)}

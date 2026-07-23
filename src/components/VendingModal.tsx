@@ -79,7 +79,7 @@ export const VendingModal: React.FC<VendingModalProps> = ({
   const [isVending, setIsVending] = useState(false);
 
   const handleBuy = () => {
-    if (coins < 1 || isVending) return;
+    if (coins < 10 || isVending) return;
 
     setIsVending(true);
     soundEngine.playVending();
@@ -148,24 +148,24 @@ export const VendingModal: React.FC<VendingModalProps> = ({
           </div>
         ) : (
           <div className="bg-slate-950/60 border border-slate-800 p-4 rounded-xl mb-6 text-xs text-slate-400 font-sans">
-            Insert 1 coin collected from the corridor floor to vend a surprise snack or boost item!
+            Insert 10 coins collected from the corridor floor to vend a surprise snack or boost item!
           </div>
         )}
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
-          {coins >= 1 ? (
+          {coins >= 10 ? (
             <button
               disabled={isVending}
               onClick={handleBuy}
               className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold font-pixel text-xs rounded-xl border-2 border-blue-300 shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <ShoppingBag className="w-4 h-4" />
-              <span>{dispensedItem ? "VEND ANOTHER (1 COIN)" : "INSERT 1 COIN & VEND 🥤"}</span>
+              <span>{dispensedItem ? "VEND ANOTHER (10 COINS)" : "INSERT 10 COINS & VEND 🥤"}</span>
             </button>
           ) : (
             <div className="p-3 bg-red-950/80 border border-red-800 rounded-xl text-xs text-red-300 font-sans">
-              🔒 Requires 1 Coin! Walk around the hallway floor to find shiny golden coins! 🪙
+              🔒 Requires 10 Coins! Walk around the hallway floor to find shiny golden coins! 🪙
             </div>
           )}
 

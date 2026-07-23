@@ -10,7 +10,6 @@ interface HeaderBarProps {
   isMuted: boolean;
   onToggleMute: () => void;
   onLogout: () => void;
-  onOpenQuiz: () => void;
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
@@ -19,8 +18,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   catPetTimer,
   isMuted,
   onToggleMute,
-  onLogout,
-  onOpenQuiz
+  onLogout
 }) => {
   return (
     <header className="bg-amber-950/95 border-b-4 border-amber-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg z-20">
@@ -72,7 +70,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
         {/* Coins Badge */}
         <div 
-          title="Collect coins in the hallway floor! Use 1 coin at the Vending Machine for snacks and boosts!"
+          title="Collect coins in the hallway floor! Use 10 coins at the Vending Machine for snacks and boosts!"
           className="flex items-center gap-1.5 bg-amber-950 border-2 border-yellow-500/80 px-2.5 py-1 rounded-md text-amber-300 font-pixel text-xs shadow animate-pulse"
         >
           <Coins className="w-3.5 h-3.5 text-yellow-400" />
@@ -80,41 +78,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </div>
 
         {/* Cat Companion Status */}
-        <button
-          onClick={() => {
-            soundEngine.playSelect();
-            onOpenQuiz();
-          }}
-          title={catPetTimer > 0 ? "Whiskers the Cat is purring! Click to open Mini-Quiz" : "Score 3+ on the Mini-Quiz to recruit Whiskers the Pixel Cat!"}
-          className={`flex items-center gap-1.5 border-2 px-2.5 py-1 rounded-md font-pixel text-[10px] transition-transform hover:scale-105 cursor-pointer ${
-            catPetTimer > 0 
-              ? 'bg-emerald-950 border-emerald-500 text-emerald-300 shadow-md' 
-              : 'bg-amber-950 border-amber-700 text-amber-400 opacity-90'
-          }`}
-        >
-          <Cat className={`w-3.5 h-3.5 ${catPetTimer > 0 ? 'text-emerald-400 animate-bounce' : 'text-amber-500'}`} />
-          {catPetTimer > 0 ? (
+        {catPetTimer > 0 ? (
+          <div
+            title="Whiskers the Cat is purring and following you!"
+            className="flex items-center gap-1.5 border-2 px-2.5 py-1 rounded-md font-pixel text-[10px] bg-emerald-950 border-emerald-500 text-emerald-300 shadow-md"
+          >
+            <Cat className="w-3.5 h-3.5 text-emerald-400 animate-bounce" />
             <span>🐱 CAT: {Math.floor(catPetTimer / 60)}:{String(catPetTimer % 60).padStart(2, '0')}</span>
-          ) : (
-            <span>🐱 RECRUIT CAT [QUIZ]</span>
-          )}
-        </button>
+          </div>
+        ) : (
+          <div
+            title="Visit the physical kiosk in the hallway to take the IELTS Quiz and recruit Whiskers!"
+            className="flex items-center gap-1.5 border-2 px-2.5 py-1 rounded-md font-pixel text-[10px] bg-amber-950 border-amber-850 text-amber-500 opacity-80"
+          >
+            <Cat className="w-3.5 h-3.5 text-amber-600" />
+            <span>🐱 NO CAT 😢</span>
+          </div>
+        )}
 
       </div>
 
       {/* Action Buttons */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => {
-            soundEngine.playSelect();
-            onOpenQuiz();
-          }}
-          title="Open IELTS Mini-Quiz Kiosk to earn coins & Whiskers the Cat!"
-          className="bg-purple-900 hover:bg-purple-800 border-2 border-purple-500 px-3 py-2 rounded font-pixel text-[10px] text-purple-200 flex items-center gap-1.5 cursor-pointer transition-transform hover:scale-105 active:scale-95 shadow"
-        >
-          <span>🎯 MINI-QUIZ</span>
-        </button>
-
         <button
           onClick={onToggleMute}
           title={isMuted ? "Unmute Audio" : "Mute Audio"}
