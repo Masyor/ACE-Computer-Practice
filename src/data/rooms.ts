@@ -55,6 +55,13 @@ export const ROOMS: DoorRoom[] = [
     icon: 'GraduationCap',
     getLinks: (stage: StageLevel): ResourceLink[] => {
       const generalExamLinks: ResourceLink[] = [
+      {
+        title: 'ACE Writing Practice',
+        url: 'https://script.google.com/macros/s/AKfycbypLhYxTlrluyp3bnH11QQhFjKXSY-P8ioIOw4fg0r7IaaF-XyamCjgOo76YBor4WQ/exec',
+        description: '⭐ Featured App! PRactice your IELTS writing in an authentic test environment.',
+        badge: '⭐ Featured App',
+        iconType: 'BookOpen'
+      },
         {
           title: 'Mini-IELTS Practice Vault',
           url: 'https://mini-ielts.com/',
