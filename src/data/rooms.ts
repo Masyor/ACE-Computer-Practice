@@ -262,6 +262,13 @@ export const ROOMS: DoorRoom[] = [
     icon: 'FileText',
     getLinks: (): ResourceLink[] => [
       {
+        title: 'ACE Writing Practice',
+        url: 'https://script.google.com/macros/s/AKfycbypLhYxTlrluyp3bnH11QQhFjKXSY-P8ioIOw4fg0r7IaaF-XyamCjgOo76YBor4WQ/exec',
+        description: '⭐ Featured App! PRactice your IELTS writing in an authentic test environment.',
+        badge: '⭐ Featured App',
+        iconType: 'BookOpen'
+      },
+      {
         title: 'Mini-IELTS Writing Vault',
         url: 'https://mini-ielts.com/writing',
         description: 'Real IELTS Task 1 & Task 2 writing topics with Band 8/9 model essays.',
