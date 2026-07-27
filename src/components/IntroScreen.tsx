@@ -233,7 +233,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                     Uniform Color
                   </label>
                   <div className="flex gap-1.5">
-                    {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#0284c7'].map((color) => (
+                    {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#0284c7','#fb82d6'].map((color) => (
                       <button
                         key={color}
                         type="button"
@@ -252,7 +252,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                     Hair Color
                   </label>
                   <div className="flex gap-1.5">
-                    {['#fde047', '#451a03', '#18181b', '#b91c1c', '#ea580c', '#38bdf8'].map((color) => (
+                    {['#fde047', '#451a03', '#18181b', '#b91c1c', '#ea580c', '#38bdf8','#fb82d6'].map((color) => (
                       <button
                         key={color}
                         type="button"
