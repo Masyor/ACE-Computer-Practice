@@ -170,7 +170,7 @@ export const ROOMS: DoorRoom[] = [
       },
       {
         title: 'IELTS Online Tests - Listening',
-        url: 'https://ieltsonlinetests.com/listening-practice-tests',
+        url: 'https://ieltsonlinetests.com/ielts-exam-library?skill=listening',
         description: 'Full audio listening test simulations with computer-style interface.',
         badge: 'Mock Tests',
         iconType: 'Headphones'
@@ -239,7 +239,7 @@ export const ROOMS: DoorRoom[] = [
       },
       {
         title: 'IELTS Online Tests - Reading',
-        url: 'https://ieltsonlinetests.com/reading-practice-tests',
+        url: 'https://ieltsonlinetests.com/ielts-exam-library?skill=reading',
         description: 'Computer-delivered IELTS reading mock exams with explanations.',
         badge: 'Mock Tests',
         iconType: 'BookOpen'
@@ -277,7 +277,7 @@ export const ROOMS: DoorRoom[] = [
       },
       {
         title: 'IELTS Online Tests - Writing',
-        url: 'https://ieltsonlinetests.com/writing-practice-tests',
+        url: 'https://ieltsonlinetests.com/ielts-exam-library?skill=writing',
         description: 'Computer-delivered writing practice with timer & word counter.',
         badge: 'Simulations',
         iconType: 'FileText'
