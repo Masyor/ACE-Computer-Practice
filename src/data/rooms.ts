@@ -208,7 +208,7 @@ export const ROOMS: DoorRoom[] = [
       },
       {
         title: 'IELTS Online Tests - Speaking',
-        url: 'https://ieltsonlinetests.com/speaking-practice-tests',
+        url: 'https://ieltsonlinetests.com/ielts-exam-library?skill=speaking',
         description: 'Interactive speaking simulator with sample recordings & candidate responses.',
         badge: 'Simulations',
         iconType: 'Volume2'
