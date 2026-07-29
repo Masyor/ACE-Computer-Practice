@@ -752,14 +752,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const WHITEBOARD_MESSAGES = [
     "IELTS Band 9 loading... ■■■■■■■■■□ 90%",
     "Chan was here! Bopha is WRONG, 'different from' is the gold standard! 📝",
-    "Who drank my Matcha Boba Energy Tea?! I will hunt you down. - Stressed Student",
+    "Who drank my Matcha?! I will hunt you down. - Stressed Student",
     "Remember: 'Effect' is a noun (cause & effect) while 'Affect' is a verb! 💡",
     "Whiskers is the actual principal of this academy. Meow! 🐾",
     "DON'T PANIC! The IELTS Speaking examiner is just a human. Take a deep breath!",
-    "Lost: Black Pixel Cat answering to 'Choco'. Last seen running at supersonic speed. 🐱",
+    "Lost: Black Cat answering to 'Choco'. Last seen running at supersonic speed. 🐱",
     "Tip of the Day: Spend 5 minutes planning Writing Task 2 structure before typing! 🖊️",
     "I'm only here for the boba, but I guess a Band 8 is a nice bonus. 🧋",
-    "Typing Speed Checklist:\n1. Keep wrists relaxed\n2. Do NOT look down\n3. Smash keys with 80's retro energy! ⚡"
+    "Typing Speed Checklist:\n1. Keep wrists relaxed\n2. Do NOT look down\n3. Smash keys! ⚡"
   ];
 
   const handleInteractWithItem = useCallback((item: CorridorItem) => {
