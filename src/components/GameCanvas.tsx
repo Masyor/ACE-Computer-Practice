@@ -751,7 +751,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   const WHITEBOARD_MESSAGES = [
     "IELTS Band 9 loading... ■■■■■■■■■□ 90%",
-    "Chan was here! Bopha is WRONG, 'different from' is the gold standard! 📝",
+    "Your mother is a hamster and your father smells of elderberries!",
     "Who drank my Matcha?! I will hunt you down. - Stressed Student",
     "Remember: 'Effect' is a noun (cause & effect) while 'Affect' is a verb! 💡",
     "Whiskers is the actual principal of this academy. Meow! 🐾",
