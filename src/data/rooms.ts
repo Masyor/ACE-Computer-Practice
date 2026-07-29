@@ -58,7 +58,7 @@ export const ROOMS: DoorRoom[] = [
       {
         title: 'ACE Writing Practice',
         url: 'https://script.google.com/macros/s/AKfycbypLhYxTlrluyp3bnH11QQhFjKXSY-P8ioIOw4fg0r7IaaF-XyamCjgOo76YBor4WQ/exec',
-        description: '⭐ Featured App! PRactice your IELTS writing in an authentic test environment.',
+        description: '⭐ Featured App! Practice your IELTS writing in an authentic test environment.',
         badge: '⭐ Featured App',
         iconType: 'BookOpen'
       },
@@ -130,6 +130,13 @@ export const ROOMS: DoorRoom[] = [
     color: '#0284c7', // Sky Blue
     icon: 'Tv',
     getLinks: (): ResourceLink[] => [
+      {
+        title: 'Stay Healthy!',
+        url: 'https://masyor.github.io/ACE-IELTS-Study-Pet/',
+        description: '⭐ Featured App! Help a cute owl to get ready for their IELTS test.',
+        badge: '⭐ Featured App',
+        iconType: 'Sparkles'
+      },
       {
         title: 'IELTS by IDP Official Channel',
         url: 'https://www.youtube.com/c/ieltsbyidp',
