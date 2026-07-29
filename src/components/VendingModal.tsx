@@ -1,35 +1,38 @@
 import React, { useState } from 'react';
 import { soundEngine } from '../utils/audio';
-import { Coins, X, Sparkles, ShoppingBag, Zap, Coffee, BookOpen, PenTool } from 'lucide-react';
+import { Coins, X, ShoppingBag } from 'lucide-react';
 
 interface VendingItem {
   id: string;
   name: string;
   icon: string;
-  type: 'speed' | 'coin' | 'tip';
-  color: string;
+  type: 'speed' | 'coin' | 'tip' | 'cat_time' | 'cat_color';
+  color?: string;
   description: string;
   effectText: string;
+  caffeineValue?: number;
 }
 
-const VENDING_PRIZES: VendingItem[] = [
+const BASE_VENDING_PRIZES: VendingItem[] = [
   {
     id: 'matcha_boba',
     name: 'Matcha Boba Energy Tea',
     icon: '🧋',
     type: 'speed',
     color: '#10b981',
-    description: 'Refreshing iced boba brewed with high-grade green tea.',
-    effectText: '⚡ SPEED BOOST! Walking speed increased for 30 seconds!'
+    description: 'Refreshing iced boba brewed with high-grade green tea. Loaded with sugar and tea caffeine!',
+    effectText: '⚡ SPEED BOOST! Walking speed increased for 30 seconds! (Caffeine +1)',
+    caffeineValue: 1
   },
   {
     id: 'focus_coffee',
-    name: 'IELTS Concentration Espresso',
+    name: 'Concentration Espresso',
     icon: '☕',
-    type: 'coin',
+    type: 'speed',
     color: '#b45309',
-    description: 'Dark roasted espresso brewed for late night study sessions.',
-    effectText: '🪙 LUCKY COIN! You found 1 extra coin tucked under the cup lid!'
+    description: 'Double shot of dark roasted espresso brewed for study sessions. Extreme caffeine!',
+    effectText: '⚡ HYPER ENERGY SPEED BOOST! 🪙 Found 1 lucky coin under the cup lid! (Caffeine +2)',
+    caffeineValue: 2
   },
   {
     id: 'grammar_choco',
@@ -37,8 +40,9 @@ const VENDING_PRIZES: VendingItem[] = [
     icon: '🍫',
     type: 'tip',
     color: '#8b5cf6',
-    description: 'Rich dark chocolate wrapped in grammar rules.',
-    effectText: '💡 GRAMMAR TIP: "Complement" (completes something) vs "Compliment" (praise)!'
+    description: 'Rich dark chocolate wrapped in grammar rules. Instant sugar energy!',
+    effectText: '⚡ SWEET ENERGY BOOST! 💡 GRAMMAR: "Complement" (completes) vs "Compliment" (praise)!',
+    caffeineValue: 1
   },
   {
     id: 'vocab_soda',
@@ -46,8 +50,9 @@ const VENDING_PRIZES: VendingItem[] = [
     icon: '🥤',
     type: 'tip',
     color: '#0284c7',
-    description: 'Fizzy soda infused with high-level academic collocations.',
-    effectText: '💡 VOCAB TIP: Replace "important" with "crucial", "paramount", or "imperative"!'
+    description: 'Fizzy soda infused with academic collocations. High sugar speed boost!',
+    effectText: '⚡ FIZZY SUGAR BOOST! 💡 VOCAB: Use "crucial" or "paramount" instead of "important"! (Caffeine +1)',
+    caffeineValue: 1
   },
   {
     id: 'golden_pen',
@@ -55,24 +60,87 @@ const VENDING_PRIZES: VendingItem[] = [
     icon: '🖊️',
     type: 'speed',
     color: '#eab308',
-    description: 'An engraved golden pen for essay writing.',
-    effectText: '⚡ SPEED BOOST & TASK 2 TIP: Spend 5 mins planning structure before writing!'
+    description: 'An engraved golden pen for essay writing. Inspires swift writing speed.',
+    effectText: '⚡ INSPIRATION SPEED BOOST! 💡 WRITING TIP: Plan structure for 5 mins before writing! (0 Caffeine)'
+  }
+];
+
+const CAT_VENDING_PRIZES: VendingItem[] = [
+  {
+    id: 'cat_yarn',
+    name: 'Rainbow Yarn Ball',
+    icon: '🧶',
+    type: 'cat_time',
+    description: 'A super bouncy, colorful woolen yarn ball that Whiskers absolutely loves!',
+    effectText: '🐾 CAT PLAYTIME! Whiskers is overjoyed and will follow you for an extra 45 seconds!'
+  },
+  {
+    id: 'cat_salmon',
+    name: 'Premium Salmon Bites',
+    icon: '🐟',
+    type: 'cat_time',
+    description: 'Delectable, organic freeze-dried salmon treats. Pure feline bliss!',
+    effectText: '🐾 CAT TREAT! Whiskers purrs happily and follows you for an extra 45 seconds!'
+  },
+  {
+    id: 'cat_dye_pink',
+    name: 'Cosmic Pink Fur Dye',
+    icon: '🧪',
+    type: 'cat_color',
+    color: '#ec4899',
+    description: 'A magical potion that dyes your cat companion a mystical Cosmic Pink!',
+    effectText: '🌈 NEON GLOW! Whiskers is now styled in a stylish Cosmic Pink fur coat!'
+  },
+  {
+    id: 'cat_dye_blue',
+    name: 'Midnight Blue Fur Dye',
+    icon: '🧪',
+    type: 'cat_color',
+    color: '#3b82f6',
+    description: 'A magical potion that dyes your cat companion a stunning Midnight Blue!',
+    effectText: '🌈 NEON GLOW! Whiskers is now styled in a magical Midnight Blue fur coat!'
+  },
+  {
+    id: 'cat_dye_green',
+    name: 'Neon Green Fur Dye',
+    icon: '🧪',
+    type: 'cat_color',
+    color: '#22c55e',
+    description: 'A magical potion that dyes your cat companion a radiant Neon Green!',
+    effectText: '🌈 NEON GLOW! Whiskers is now styled in a radioactive Neon Green fur coat!'
+  },
+  {
+    id: 'cat_dye_purple',
+    name: 'Galactic Purple Fur Dye',
+    icon: '🧪',
+    type: 'cat_color',
+    color: '#a855f7',
+    description: 'A magical potion that dyes your cat companion a beautiful Galactic Purple!',
+    effectText: '🌈 NEON GLOW! Whiskers is now styled in a gorgeous Galactic Purple fur coat!'
   }
 ];
 
 interface VendingModalProps {
   coins: number;
+  catActive: boolean;
   onDeductCoin: () => void;
   onAddCoin: (amount: number) => void;
-  onTriggerSpeedBoost: () => void;
+  onTriggerSpeedBoost: (source?: 'sugar' | 'inspiration') => void;
+  onAddCaffeine: (amount: number) => void;
+  onAddCatTime: (seconds: number) => void;
+  onChangeCatColor: (color: string) => void;
   onClose: () => void;
 }
 
 export const VendingModal: React.FC<VendingModalProps> = ({
   coins,
+  catActive,
   onDeductCoin,
   onAddCoin,
   onTriggerSpeedBoost,
+  onAddCaffeine,
+  onAddCatTime,
+  onChangeCatColor,
   onClose
 }) => {
   const [dispensedItem, setDispensedItem] = useState<VendingItem | null>(null);
@@ -86,14 +154,44 @@ export const VendingModal: React.FC<VendingModalProps> = ({
     onDeductCoin();
 
     setTimeout(() => {
-      const prize = VENDING_PRIZES[Math.floor(Math.random() * VENDING_PRIZES.length)];
+      // Build dynamic pool of prizes
+      const pool: VendingItem[] = [...BASE_VENDING_PRIZES];
+
+      // Only add dyes, toys, and food if the cat is actively following
+      if (catActive) {
+        const dyes = CAT_VENDING_PRIZES.filter(item => item.type === 'cat_color');
+        pool.push(...dyes);
+        const timeItems = CAT_VENDING_PRIZES.filter(item => item.type === 'cat_time');
+        pool.push(...timeItems);
+      }
+
+      const prize = pool[Math.floor(Math.random() * pool.length)];
       setDispensedItem(prize);
       setIsVending(false);
 
+      // Handle custom item actions
       if (prize.type === 'speed') {
-        onTriggerSpeedBoost();
-      } else if (prize.type === 'coin') {
+        onTriggerSpeedBoost(prize.id === 'golden_pen' ? 'inspiration' : 'sugar');
+        if (prize.caffeineValue) {
+          onAddCaffeine(prize.caffeineValue);
+        }
+      } else if (prize.type === 'tip') {
+        onTriggerSpeedBoost('sugar'); // Sugar high!
+        if (prize.caffeineValue) {
+          onAddCaffeine(prize.caffeineValue);
+        }
+      } else if (prize.id === 'focus_coffee') {
+        onTriggerSpeedBoost('sugar');
         onAddCoin(1);
+        onAddCaffeine(2);
+      } else if (prize.type === 'cat_time') {
+        onAddCatTime(45);
+        soundEngine.playMeow();
+      } else if (prize.type === 'cat_color') {
+        if (prize.color) {
+          onChangeCatColor(prize.color);
+        }
+        soundEngine.playMeow();
       }
     }, 600);
   };

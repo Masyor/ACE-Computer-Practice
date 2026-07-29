@@ -17,6 +17,9 @@ export default function App() {
   const [coins, setCoins] = useState(2); // Start with 2 coins
   const [catPetTimer, setCatPetTimer] = useState(0); // Countdown in seconds
   const [speedBoostTimer, setSpeedBoostTimer] = useState(0); // Speed boost in seconds
+  const [speedBoostSource, setSpeedBoostSource] = useState<'sugar' | 'inspiration'>('sugar');
+  const [caffeineLevel, setCaffeineLevel] = useState(0);
+  const [caffeineTimer, setCaffeineTimer] = useState(15);
 
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showVendingModal, setShowVendingModal] = useState(false);
@@ -26,10 +29,12 @@ export default function App() {
     stage: 'GEP 11A',
     shirtColor: '#3b82f6',
     hairColor: '#fde047',
-    spriteStyle: 'academic'
+    spriteStyle: 'academic',
+    hairStyle: 'spiky',
+    catColor: '#d97706'
   });
 
-  // Countdown timer for Cat Companion and Speed Boost
+  // Countdown timer for Cat Companion, Speed Boost and Caffeine Decay
   useEffect(() => {
     const timer = setInterval(() => {
       setCatPetTimer(prev => {
@@ -40,6 +45,14 @@ export default function App() {
       });
 
       setSpeedBoostTimer(prev => (prev > 0 ? prev - 1 : 0));
+
+      setCaffeineTimer(prev => {
+        if (prev <= 1) {
+          setCaffeineLevel(c => (c > 0 ? c - 1 : 0));
+          return 15; // reset decay timer
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
@@ -72,8 +85,13 @@ export default function App() {
     soundEngine.playMeow();
   };
 
-  const handleTriggerSpeedBoost = () => {
+  const handleTriggerSpeedBoost = (source?: 'sugar' | 'inspiration') => {
     setSpeedBoostTimer(30); // 30 seconds speed boost
+    setSpeedBoostSource(source || 'sugar');
+  };
+
+  const handleAddCatTime = (seconds: number) => {
+    setCatPetTimer(prev => (prev > 0 ? prev + seconds : 0));
   };
 
   return (
@@ -103,7 +121,11 @@ export default function App() {
           coins={coins}
           catPetTimer={catPetTimer}
           speedBoostTimer={speedBoostTimer}
+          speedBoostSource={speedBoostSource}
+          caffeineLevel={caffeineLevel}
+          onChangeCaffeine={(val) => setCaffeineLevel(val)}
           onAddCoins={handleAddCoins}
+          onAddCatTime={handleAddCatTime}
           onOpenRoom={(room) => setActiveRoom(room)}
           onOpenQuiz={() => setShowQuizModal(true)}
           onOpenVending={() => setShowVendingModal(true)}
@@ -132,9 +154,13 @@ export default function App() {
         {showVendingModal && (
           <VendingModal
             coins={coins}
+            catActive={catPetTimer > 0}
             onDeductCoin={() => handleAddCoins(-10)}
             onAddCoin={(amt) => handleAddCoins(amt)}
             onTriggerSpeedBoost={handleTriggerSpeedBoost}
+            onAddCaffeine={(amt) => setCaffeineLevel(prev => prev + amt)}
+            onAddCatTime={handleAddCatTime}
+            onChangeCatColor={(color) => setPlayer(prev => ({ ...prev, catColor: color }))}
             onClose={() => setShowVendingModal(false)}
           />
         )}

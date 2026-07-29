@@ -9,7 +9,11 @@ interface GameCanvasProps {
   coins: number;
   catPetTimer: number;
   speedBoostTimer: number;
+  speedBoostSource?: 'sugar' | 'inspiration';
+  caffeineLevel?: number;
+  onChangeCaffeine?: (val: number) => void;
   onAddCoins: (amount: number) => void;
+  onAddCatTime?: (seconds: number) => void;
   onOpenRoom: (room: DoorRoom) => void;
   onOpenQuiz: () => void;
   onOpenVending: () => void;
@@ -373,8 +377,34 @@ function generateModularItems(npcs: NPCData[] = []): CorridorItem[] {
   // Sort items by Y position so items higher up render behind items lower down
   items.sort((a, b) => a.y - b.y);
 
-  // Permanent Vending Machine & Mini-Quiz Kiosk
+  // Permanent Vending Machine, Mini-Quiz Kiosk, Water Cooler, and Student Whiteboard
   const permanentItems: CorridorItem[] = [
+    {
+      id: 'item_whiteboard',
+      name: 'Interactive Student Whiteboard',
+      type: 'whiteboard',
+      x: 320,
+      y: 135,
+      width: 52,
+      height: 50,
+      color: '#f8fafc',
+      icon: '📝',
+      tipText: "📝 Student Whiteboard! Read funny doodles, rules, and student advice!",
+      isSpecialModal: true
+    },
+    {
+      id: 'item_water_cooler',
+      name: 'Refreshing Water Cooler',
+      type: 'water_cooler',
+      x: 580,
+      y: 135,
+      width: 32,
+      height: 58,
+      color: '#38bdf8',
+      icon: '💧',
+      tipText: "💧 Water Cooler! Drink a cool cup of water to refresh and reset caffeine!",
+      isSpecialModal: true
+    },
     {
       id: 'item_vending',
       name: 'Vending Machine',
@@ -667,7 +697,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   coins,
   catPetTimer,
   speedBoostTimer,
+  speedBoostSource = 'sugar',
+  caffeineLevel = 0,
+  onChangeCaffeine,
   onAddCoins,
+  onAddCatTime,
   onOpenRoom,
   onOpenQuiz,
   onOpenVending,
@@ -684,8 +718,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     { id: 'coin_4', x: 1610, y: 410, active: true, respawnTimer: 0 }
   ]);
 
+  // Semi-rare cat items that sometimes spawn when Whiskers is following the player
+  const catTimePickupsRef = useRef<Array<{ id: string; x: number; y: number; active: boolean; type: 'toy' | 'treat' }>>([]);
+
   const catPosRef = useRef({ x: 90, y: 360 });
   const coinParticlesRef = useRef<Array<{ x: number; y: number; text: string; life: number }>>([]);
+  const trailParticlesRef = useRef<Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    color: string;
+    life: number;
+    maxLife: number;
+  }>>([]);
 
   // Randomized NPCs & Items on Initialization
   const npcsRef = useRef<NPCData[]>(generateRandomizedNPCs());
@@ -699,6 +746,56 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const nearbyRoomRef = useRef<DoorRoom | null>(null);
 
   const [showConsoleModal, setShowConsoleModal] = useState<boolean>(false);
+  const [showWhiteboardModal, setShowWhiteboardModal] = useState<boolean>(false);
+  const [whiteboardMessage, setWhiteboardMessage] = useState<string>('');
+
+  const WHITEBOARD_MESSAGES = [
+    "IELTS Band 9 loading... ■■■■■■■■■□ 90%",
+    "Chan was here! Bopha is WRONG, 'different from' is the gold standard! 📝",
+    "Who drank my Matcha Boba Energy Tea?! I will hunt you down. - Stressed Student",
+    "Remember: 'Effect' is a noun (cause & effect) while 'Affect' is a verb! 💡",
+    "Whiskers is the actual principal of this academy. Meow! 🐾",
+    "DON'T PANIC! The IELTS Speaking examiner is just a human. Take a deep breath!",
+    "Lost: Black Pixel Cat answering to 'Choco'. Last seen running at supersonic speed. 🐱",
+    "Tip of the Day: Spend 5 minutes planning Writing Task 2 structure before typing! 🖊️",
+    "I'm only here for the boba, but I guess a Band 8 is a nice bonus. 🧋",
+    "Typing Speed Checklist:\n1. Keep wrists relaxed\n2. Do NOT look down\n3. Smash keys with 80's retro energy! ⚡"
+  ];
+
+  const handleInteractWithItem = useCallback((item: CorridorItem) => {
+    soundEngine.playSelect();
+    if (item.type === 'vending_machine') {
+      onOpenVending();
+    } else if (item.type === 'quiz_kiosk') {
+      onOpenQuiz();
+    } else if (item.type === 'water_cooler') {
+      soundEngine.playDoorChime();
+      if (onChangeCaffeine) {
+        onChangeCaffeine(0);
+      }
+      coinParticlesRef.current.push({
+        x: item.x + item.width / 2,
+        y: item.y,
+        text: '💧 HYDRATED! CAFFEINE CLEAR 💧',
+        life: 60
+      });
+      eventBannerRef.current = {
+        text: "💧 Gulp gulp... Ah! You drank some ice cold water. Caffeine reset!",
+        timer: 180
+      };
+    } else if (item.type === 'whiteboard') {
+      const randomMsg = WHITEBOARD_MESSAGES[Math.floor(Math.random() * WHITEBOARD_MESSAGES.length)];
+      setWhiteboardMessage(randomMsg);
+      setShowWhiteboardModal(true);
+    } else if (item.isSpecialModal) {
+      setShowConsoleModal(true);
+    } else {
+      eventBannerRef.current = {
+        text: `✨ ${item.tipText}`,
+        timer: 180
+      };
+    }
+  }, [onOpenVending, onOpenQuiz, onChangeCaffeine, WHITEBOARD_MESSAGES]);
 
   // Random Event State (Pixel Cat Dash / Confetti / Sparkles)
   const eventCatRef = useRef({
@@ -772,19 +869,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
       // Interact with Item (Vending, Quiz Kiosk, Console or Modular Items)
       if ((key === 'e' || key === ' ') && currentItem && !isPaused) {
-        soundEngine.playSelect();
-        if (currentItem.type === 'vending_machine') {
-          onOpenVending();
-        } else if (currentItem.type === 'quiz_kiosk') {
-          onOpenQuiz();
-        } else if (currentItem.isSpecialModal) {
-          setShowConsoleModal(true);
-        } else {
-          eventBannerRef.current = {
-            text: `✨ ${currentItem.tipText}`,
-            timer: 180
-          };
-        }
+        handleInteractWithItem(currentItem);
       }
       // Talk to NPC if near
       else if ((key === 'e' || key === ' ') && currentNPC && !currentRoom && !isPaused) {
@@ -822,7 +907,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isPaused, handleOpenRoom, catPetTimer]);
+  }, [isPaused, handleOpenRoom, catPetTimer, handleInteractWithItem]);
 
   // Main Render & Physics Game Loop
   const render = useCallback(() => {
@@ -836,7 +921,18 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
     // Movement Physics
     if (!isPaused) {
-      p.speed = speedBoostTimer > 0 ? 4.8 : 3.2;
+      const hasSugarOrInspiration = speedBoostTimer > 0;
+      const hasCaffeine = caffeineLevel > 0;
+
+      if (hasSugarOrInspiration && hasCaffeine) {
+        p.speed = 6.4; // Dual Rush / Overdrive Speed!
+      } else if (caffeineLevel >= 3) {
+        p.speed = 5.8;
+      } else if (hasSugarOrInspiration || hasCaffeine) {
+        p.speed = 4.8;
+      } else {
+        p.speed = 3.2;
+      }
       p.isMoving = false;
       const combinedKeys = { ...keysRef.current, ...touchKeysRef.current };
 
@@ -884,6 +980,24 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (p.y < minY) p.y = minY;
       if (p.y > maxY) p.y = maxY;
 
+      // Spawn fire trail if both sugar/inspiration and caffeine are active and player is moving
+      if (hasSugarOrInspiration && hasCaffeine && p.isMoving) {
+        for (let i = 0; i < 2; i++) {
+          const colors = ['#ef4444', '#f97316', '#facc15', '#fef08a'];
+          const randColor = colors[Math.floor(Math.random() * colors.length)];
+          trailParticlesRef.current.push({
+            x: p.x + p.width / 2 + (Math.random() - 0.5) * 16,
+            y: p.y + p.height - 4 + (Math.random() - 0.5) * 6,
+            vx: -dx * 0.15 + (Math.random() - 0.5) * 0.8,
+            vy: -dy * 0.15 - (Math.random() * 1.2 + 0.3),
+            size: Math.random() * 5 + 4,
+            color: randColor,
+            life: 20 + Math.random() * 10,
+            maxLife: 30
+          });
+        }
+      }
+
       // Check Floor Coins Pickup Collision
       const now = Date.now();
       floorCoinsRef.current.forEach(c => {
@@ -907,6 +1021,50 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           }
         }
       });
+
+      // Spawning and Collision of Semi-Rare Cat Time Extenders (Toys/Treats)
+      if (catPetTimer > 0) {
+        // ~0.08% chance per frame to try spawning a cat item (capped at max 2 active)
+        if (Math.random() < 0.0008 && catTimePickupsRef.current.filter(item => item.active).length < 2) {
+          const spawnX = Math.floor(250 + Math.random() * 1400);
+          const spawnY = Math.floor(320 + Math.random() * 100);
+          catTimePickupsRef.current.push({
+            id: `cat_item_${Date.now()}`,
+            x: spawnX,
+            y: spawnY,
+            active: true,
+            type: Math.random() > 0.5 ? 'toy' : 'treat'
+          });
+        }
+
+        // Check collision with Cat items
+        catTimePickupsRef.current.forEach(item => {
+          if (item.active) {
+            const dist = Math.hypot((p.x + p.width / 2) - item.x, (p.y + p.height / 2) - item.y);
+            if (dist < 28) {
+              item.active = false;
+              soundEngine.playMeow();
+              
+              if (onAddCatTime) {
+                onAddCatTime(45); // Adds 45 seconds to Whiskers' timer
+              }
+
+              const label = item.type === 'toy' ? '🐾 CAT TOY (+45s) 🧶' : '🐟 CAT TREAT (+45s) 🐟';
+              coinParticlesRef.current.push({
+                x: item.x,
+                y: item.y,
+                text: label,
+                life: 60
+              });
+            }
+          }
+        });
+      } else {
+        // Clear all active treats if Whiskers is no longer following
+        if (catTimePickupsRef.current.length > 0) {
+          catTimePickupsRef.current = [];
+        }
+      }
 
       // Step Sound & Animation Frame
       if (p.isMoving) {
@@ -980,7 +1138,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         const itemCenterX = item.x + item.width / 2;
         const itemCenterY = item.y + item.height / 2;
         const dist = Math.hypot(pCenterX - itemCenterX, pCenterY - itemCenterY);
-        const maxDist = (item.type === 'vending_machine' || item.type === 'quiz_kiosk') ? 78 : 55;
+        const maxDist = (item.type === 'vending_machine' || item.type === 'quiz_kiosk' || item.type === 'whiteboard' || item.type === 'water_cooler') ? 85 : 55;
         if (dist < maxDist) {
           foundItem = item;
         }
@@ -1119,6 +1277,33 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     });
 
+    // 3.6 Draw Semi-Rare Cat Time Pickups 🧶🐟
+    if (catPetTimer > 0) {
+      catTimePickupsRef.current.forEach(item => {
+        if (item.active) {
+          const floatY = Math.sin((now + item.x * 2.5) / 160) * 3;
+          const iy = item.y + floatY;
+
+          // Shadow
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          ctx.beginPath();
+          ctx.ellipse(item.x, item.y + 6, 8, 3.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Render Emoji
+          ctx.font = '12px sans-serif';
+          ctx.textAlign = 'center';
+          const icon = item.type === 'toy' ? '🧶' : '🐟';
+          ctx.fillText(icon, item.x, iy + 4);
+
+          // Sparklers
+          ctx.fillStyle = '#10b981';
+          const sparkAngle = (now / 200) + item.x;
+          ctx.fillRect(item.x + Math.cos(sparkAngle) * 9, item.y + Math.sin(sparkAngle) * 4, 2, 2);
+        }
+      });
+    }
+
     // 4. Draw Modular Doors
     ROOMS.forEach((room, idx) => {
       const doorCenterX = getRoomWorldPosition(room, idx, ROOMS.length);
@@ -1254,6 +1439,73 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.fillStyle = '#3b82f6';
         ctx.fillRect(ix + 20, iy + 46, 3, 3);
         ctx.fillRect(ix + 26, iy + 46, 3, 3);
+      } else if (item.type === 'water_cooler') {
+        // Water Cooler body
+        ctx.fillStyle = '#cbd5e1'; // Light grey plastic
+        ctx.fillRect(ix + 4, iy + 24, item.width - 8, item.height - 24);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(ix + 4, iy + 24, item.width - 8, item.height - 24);
+
+        // Water tank (top glass bottle)
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.45)'; // Translucent cyan water
+        ctx.fillRect(ix + 6, iy + 4, item.width - 12, 20);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(ix + 6, iy + 4, item.width - 12, 20);
+
+        // Water level line inside bottle
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.75)';
+        ctx.fillRect(ix + 6, iy + 9, item.width - 12, 15);
+
+        // Tiny bubbles inside tank
+        ctx.fillStyle = '#ffffff';
+        const bubbleTime = Date.now() / 350;
+        ctx.fillRect(ix + 10 + Math.sin(bubbleTime) * 1.5, iy + 14, 1.5, 1.5);
+        ctx.fillRect(ix + 16 + Math.cos(bubbleTime * 1.3) * 1.5, iy + 10, 1.5, 1.5);
+
+        // Hot / Cold taps
+        ctx.fillStyle = '#ef4444'; // Hot tap
+        ctx.fillRect(ix + 8, iy + 30, 3, 3);
+        ctx.fillStyle = '#3b82f6'; // Cold tap
+        ctx.fillRect(ix + 16, iy + 30, 3, 3);
+
+        // Drip tray
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(ix + 6, iy + 38, 14, 3);
+      } else if (item.type === 'whiteboard') {
+        // Wooden/metallic frame
+        ctx.fillStyle = '#475569'; // Charcoal metal frame
+        ctx.fillRect(ix, iy, item.width, item.height);
+        
+        // Inner white board
+        ctx.fillStyle = '#f8fafc'; // Off white
+        ctx.fillRect(ix + 3, iy + 3, item.width - 6, item.height - 10);
+
+        // Board stand/legs
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(ix + 6, iy + item.height - 7, 3, 7);
+        ctx.fillRect(ix + item.width - 9, iy + item.height - 7, 3, 7);
+
+        // Draw some mock colorful writing/doodles
+        ctx.fillStyle = '#2563eb'; // Blue writing
+        ctx.fillRect(ix + 8, iy + 8, 12, 1.5);
+        ctx.fillRect(ix + 8, iy + 12, 18, 1.5);
+
+        ctx.fillStyle = '#dc2626'; // Red heart/star/doodle
+        ctx.fillRect(ix + 28, iy + 10, 4, 4);
+
+        ctx.fillStyle = '#16a34a'; // Green math/ticks
+        ctx.fillRect(ix + 12, iy + 20, 6, 1.5);
+        ctx.fillRect(ix + 10, iy + 24, 14, 1.5);
+
+        // Markers & eraser tray at the bottom
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(ix + 6, iy + item.height - 10, item.width - 12, 3);
+        ctx.fillStyle = '#dc2626'; // Red marker dot
+        ctx.fillRect(ix + 10, iy + item.height - 10, 2, 2);
+        ctx.fillStyle = '#2563eb'; // Blue marker dot
+        ctx.fillRect(ix + 14, iy + item.height - 10, 2, 2);
       } else if (item.type === 'game_console') {
         ctx.fillStyle = '#6d28d9'; // Purple Game Boy
         ctx.fillRect(ix, iy, item.width, item.height);
@@ -1343,11 +1595,62 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillText(npc.role, centerX, npc.y - 8);
     });
 
+    // 6.9 Draw Player Fire Trail Particles (Neon Overdrive!)
+    trailParticlesRef.current.forEach(pt => {
+      pt.x += pt.vx;
+      pt.y += pt.vy;
+      pt.life -= 1;
+
+      if (pt.life > 0) {
+        const ratio = pt.life / pt.maxLife;
+        ctx.fillStyle = pt.color;
+        // Glow effect for neon fire trail
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = pt.color;
+        
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.size * ratio, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0; // reset
+      }
+    });
+    trailParticlesRef.current = trailParticlesRef.current.filter(pt => pt.life > 0);
+
     // 7. Draw Player Character
+    let drawX = p.x;
+    let drawY = p.y;
+    if (caffeineLevel >= 3) {
+      drawX += (Math.random() - 0.5) * 4.5; // Vibrates heavily!
+      drawY += (Math.random() - 0.5) * 4.5;
+
+      // Draw crazy energy sparks around the vibrating player
+      ctx.fillStyle = '#fef08a';
+      const sparkAngle = Date.now() / 80;
+      for (let s = 0; s < 4; s++) {
+        const sx = drawX + 16 + Math.cos(sparkAngle + (s * Math.PI / 2)) * 14;
+        const sy = drawY + 24 + Math.sin(sparkAngle + (s * Math.PI / 2)) * 18;
+        ctx.fillRect(sx, sy, 2.5, 2.5);
+      }
+
+      // Overhead Hyper Caffeine alert
+      ctx.fillStyle = '#facc15';
+      ctx.font = '7px "Press Start 2P"';
+      ctx.textAlign = 'center';
+      const shakeX = (Math.random() - 0.5) * 2;
+      ctx.fillText('⚡ HYPER! ⚡', drawX + 16 + shakeX, drawY - 14);
+    } else if (caffeineLevel > 0) {
+      // Light buzz overhead label
+      ctx.fillStyle = '#60a5fa';
+      ctx.font = '6px "Press Start 2P"';
+      ctx.textAlign = 'center';
+      ctx.fillText('☕ BUZZED', drawX + 16, drawY - 12);
+    }
+
     drawStudentSprite(
       ctx,
-      p.x,
-      p.y,
+      drawX,
+      drawY,
       p.dir,
       p.animFrame,
       p.isMoving,
@@ -1376,8 +1679,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.ellipse(cx + 9, cy + 12, 9, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Body (Ginger Fur)
-      ctx.fillStyle = '#d97706';
+      const customCatColor = playerCustomization.catColor || '#d97706';
+
+      // Body (Custom Fur Color)
+      ctx.fillStyle = customCatColor;
       ctx.fillRect(cx, cy, 18, 11);
 
       // Chest Patch
@@ -1386,7 +1691,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
       // Head
       const headX = p.dir === 'left' ? cx - 4 : cx + 12;
-      ctx.fillStyle = '#d97706';
+      ctx.fillStyle = customCatColor;
       ctx.fillRect(headX, cy - 6, 10, 10);
 
       // Ears
@@ -1404,7 +1709,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillRect(headX + 4, cy - 1, 2, 1);
 
       // Tail
-      ctx.fillStyle = '#d97706';
+      ctx.fillStyle = customCatColor;
       ctx.fillRect(cx - 4, cy + 2 + tailWiggle, 5, 3);
 
       // Whiskers Overhead Label
@@ -1550,7 +1855,116 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
 
-  }, [isPaused, nearbyRoom, playerCustomization, onOpenRoom]);
+    // 11. 80s Neon Retro Speed Boost Box (Bottom Right)
+    const hasSugarOrInspiration = speedBoostTimer > 0;
+    const hasCaffeine = caffeineLevel > 0;
+    
+    if (hasSugarOrInspiration || hasCaffeine) {
+      let label = "";
+      let themeColor = "#06b6d4"; // default cyan
+      let themeInner = "#cffafe";
+      let themeBorder = "#06b6d4";
+
+      if (hasSugarOrInspiration && hasCaffeine) {
+        label = "🔥 NEON OVERDRIVE! 🔥";
+        themeColor = "#f97316"; // Orange
+        themeBorder = "#ef4444"; // Red
+        themeInner = "#fef08a"; // Yellow
+      } else if (hasCaffeine) {
+        label = "CAFFEINE RUSH! ☕";
+        themeColor = "#f43f5e"; // Rose
+        themeBorder = "#f43f5e";
+        themeInner = "#fecdd3";
+      } else if (speedBoostSource === 'inspiration') {
+        label = "INSPIRATION RUSH! 🖊️";
+        themeColor = "#eab308"; // Gold
+        themeBorder = "#eab308";
+        themeInner = "#fef9c3";
+      } else {
+        label = "SUGAR RUSH! 🍬";
+        themeColor = "#06b6d4"; // Cyan
+        themeBorder = "#06b6d4";
+        themeInner = "#cffafe";
+      }
+
+      const boxW = 190;
+      const boxH = 46;
+      const bx = canvas.width - boxW - 16;
+      const by = canvas.height - boxH - 16;
+
+      // 80's synthwave neon aesthetics: outer glowing lines
+      const flash = Math.sin(Date.now() / 150) * 0.5 + 0.5;
+      const neonColor = (hasSugarOrInspiration && hasCaffeine)
+        ? `rgba(239, 68, 68, ${0.7 + flash * 0.3})`
+        : `rgba(${themeBorder === '#f43f5e' ? '244, 63, 94' : themeBorder === '#eab308' ? '234, 179, 8' : '6, 182, 212'}, ${0.7 + flash * 0.3})`;
+
+      // 1. Draw glowing outer shadow block
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = themeBorder;
+
+      // Dark background
+      ctx.fillStyle = '#09090b';
+      ctx.fillRect(bx, by, boxW, boxH);
+      ctx.shadowBlur = 0; // reset shadow for other draws
+
+      // 2. Double neon-stripe border (authentic 80s vibe!)
+      ctx.strokeStyle = neonColor;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(bx, by, boxW, boxH);
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx + 3, by + 3, boxW - 6, boxH - 6);
+
+      // 3. Scanline effect inside the box
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      for (let s = by + 4; s < by + boxH - 4; s += 3) {
+        ctx.fillRect(bx + 4, s, boxW - 8, 1);
+      }
+
+      // 4. Header / Label text
+      ctx.fillStyle = themeInner;
+      ctx.font = '7px "Press Start 2P"';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, bx + 12, by + 18);
+
+      // 5. Retro decay/progress indicator (little blocks)
+      const indicatorY = by + 28;
+      const indicatorX = bx + 12;
+      const maxBlocks = 12;
+
+      // Determine ratio
+      let ratio = 1;
+      if (hasSugarOrInspiration && hasCaffeine) {
+        const sugarRatio = Math.min(1, speedBoostTimer / 30);
+        const caffeineRatio = Math.min(1, caffeineLevel / 3);
+        ratio = Math.max(sugarRatio, caffeineRatio);
+      } else if (hasCaffeine) {
+        ratio = Math.min(1, caffeineLevel / 3);
+      } else {
+        ratio = Math.min(1, speedBoostTimer / 30);
+      }
+      
+      const activeBlocks = Math.ceil(ratio * maxBlocks);
+
+      for (let b = 0; b < maxBlocks; b++) {
+        if (b < activeBlocks) {
+          ctx.fillStyle = themeColor;
+        } else {
+          ctx.fillStyle = '#1e293b';
+        }
+        ctx.fillRect(indicatorX + b * 11, indicatorY, 8, 6);
+      }
+
+      // Small flashing arrow or bolt
+      if (flash > 0.5) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = '8px sans-serif';
+        ctx.fillText('⚡', bx + boxW - 20, by + 18);
+      }
+    }
+
+  }, [isPaused, nearbyRoom, playerCustomization, onOpenRoom, speedBoostTimer, caffeineLevel, speedBoostSource, handleInteractWithItem]);
 
   // Animation Loop Effect
   useEffect(() => {
@@ -1575,19 +1989,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const handleCanvasClick = () => {
     if (isPaused) return;
     if (nearbyItemRef.current) {
-      soundEngine.playSelect();
-      if (nearbyItemRef.current.type === 'vending_machine') {
-        onOpenVending();
-      } else if (nearbyItemRef.current.type === 'quiz_kiosk') {
-        onOpenQuiz();
-      } else if (nearbyItemRef.current.isSpecialModal) {
-        setShowConsoleModal(true);
-      } else {
-        eventBannerRef.current = {
-          text: `✨ ${nearbyItemRef.current.tipText}`,
-          timer: 180
-        };
-      }
+      handleInteractWithItem(nearbyItemRef.current);
     } else if (nearbyNPCRef.current && !nearbyRoomRef.current) {
       soundEngine.playTextBlip();
       const npc = nearbyNPCRef.current;
@@ -1676,17 +2078,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         <div className="flex flex-col gap-2">
           {nearbyItem && (
             <button
-              onClick={() => {
-                soundEngine.playSelect();
-                if (nearbyItem.isSpecialModal) {
-                  setShowConsoleModal(true);
-                } else {
-                  eventBannerRef.current = {
-                    text: `✨ ${nearbyItem.tipText}`,
-                    timer: 180
-                  };
-                }
-              }}
+              onClick={() => handleInteractWithItem(nearbyItem)}
               className="retro-button px-4 py-3 rounded-xl font-pixel text-xs text-purple-100 bg-purple-900 border-2 border-purple-400 shadow-xl"
             >
               {nearbyItem.icon} {nearbyItem.name.toUpperCase()}
@@ -1755,6 +2147,55 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                 className="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-pixel text-xs rounded-xl border border-slate-600"
               >
                 Walk Away
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Whiteboard Modal */}
+      {showWhiteboardModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-200 border-8 border-slate-300 rounded-2xl max-w-lg w-full p-6 text-center shadow-2xl relative animate-in fade-in zoom-in-95 duration-150">
+            
+            {/* Top Board Frame Pins */}
+            <div className="absolute top-2 left-6 right-6 flex justify-between px-4 pointer-events-none">
+              <span className="text-sm">🔴</span>
+              <span className="text-xs text-slate-400 font-pixel">DRY-ERASE WHITEBOARD</span>
+              <span className="text-sm">🔵</span>
+            </div>
+
+            {/* Inner White Board Paper Space */}
+            <div className="bg-slate-50 border-4 border-slate-400 rounded-xl p-8 mb-6 mt-4 shadow-inner relative overflow-hidden min-h-[160px] flex flex-col justify-center items-center">
+              
+              {/* Grid pattern background for academic dry-erase look */}
+              <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+
+              <h3 className="font-pixel text-[10px] text-slate-400 mb-4 tracking-wider uppercase">
+                Student Notes & Doodles:
+              </h3>
+
+              <p className="text-base md:text-lg text-blue-600 font-sans tracking-wide font-bold italic whitespace-pre-wrap select-none leading-relaxed text-center">
+                {whiteboardMessage}
+              </p>
+
+              {/* Marker scribbles at the bottom of the board */}
+              <div className="absolute bottom-2 right-4 text-xs opacity-40 select-none">
+                🖊️ Blue Marker
+              </div>
+            </div>
+
+            {/* Close button with pixel sound */}
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  soundEngine.playClose();
+                  setShowWhiteboardModal(false);
+                }}
+                className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 font-pixel text-xs rounded-xl border-2 border-slate-500 shadow-md transition-all hover:scale-102"
+              >
+                CLOSE BOARD
               </button>
             </div>
 

@@ -16,6 +16,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
   const [stage, setStage] = useState<StageLevel>('GEP 11A');
   const [shirtColor, setShirtColor] = useState('#3b82f6'); // Blue
   const [hairColor, setHairColor] = useState('#fde047'); // Yellow/Blonde
+  const [catColor, setCatColor] = useState('#d97706'); // Ginger Cat
   const [spriteStyle, setSpriteStyle] = useState<'classic' | 'modern' | 'academic'>('academic');
   const [hairStyle, setHairStyle] = useState<'short' | 'spiky' | 'ponytail' | 'bob' | 'curly'>('spiky');
 
@@ -59,7 +60,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
       shirtColor,
       hairColor,
       spriteStyle,
-      hairStyle
+      hairStyle,
+      catColor
     });
   };
 
@@ -154,8 +156,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-950/70 p-4 rounded border border-amber-900/60">
               
               {/* Preview Canvas */}
-              <div className="flex flex-col items-center justify-center p-4 bg-amber-950/50 rounded border border-amber-800/80 min-h-[190px]">
-                <div className="w-20 h-24 relative flex items-center justify-center pixelated scale-125">
+              <div className="flex flex-col items-center justify-center p-4 bg-amber-950/50 rounded border border-amber-800/80 min-h-[200px]">
+                <div className="flex items-end justify-center pixelated scale-125 h-20 mb-4 relative select-none">
                   {/* Pixel Art Sprite Preview */}
                   <div className="w-12 h-16 relative">
                     
@@ -227,45 +229,52 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
               </div>
 
               {/* Controls */}
-              <div className="space-y-2.5">
+              <div className="space-y-3">
+                {/* Uniform Color Picker */}
                 <div>
                   <label className="block font-silkscreen text-[10px] text-amber-200 mb-1">
                     Uniform Color
                   </label>
-                  <div className="flex gap-1.5">
-                    {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#0284c7', '#fb82d6'].map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setShirtColor(color)}
-                        className={`w-6 h-6 rounded border-2 cursor-pointer ${
-                          shirtColor === color ? 'border-amber-200 scale-110' : 'border-transparent'
-                        }`}
-                        style={{ backgroundColor: color }}
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-8 h-8 rounded border-2 border-amber-800 bg-slate-950 overflow-hidden flex items-center justify-center cursor-pointer hover:border-amber-400 transition-colors">
+                      <input 
+                        type="color" 
+                        value={shirtColor} 
+                        onChange={(e) => setShirtColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" 
                       />
-                    ))}
+                      <div className="w-6 h-6 rounded border border-black/20" style={{ backgroundColor: shirtColor }} />
+                    </div>
+                    <span className="font-pixel text-[10px] text-amber-100 bg-slate-950 border border-amber-900 px-2 py-1 rounded min-w-[70px] text-center select-all">
+                      {shirtColor.toUpperCase()}
+                    </span>
+                    <span className="text-[8px] text-amber-400/60 font-sans">← Click box to customize</span>
                   </div>
                 </div>
 
+                {/* Hair Color Picker */}
                 <div>
                   <label className="block font-silkscreen text-[10px] text-amber-200 mb-1">
                     Hair Color
                   </label>
-                  <div className="flex gap-1.5">
-                    {['#fde047', '#451a03', '#18181b', '#b91c1c', '#ea580c', '#38bdf8', '#fb82d6'].map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setHairColor(color)}
-                        className={`w-6 h-6 rounded border-2 cursor-pointer ${
-                          hairColor === color ? 'border-amber-200 scale-110' : 'border-transparent'
-                        }`}
-                        style={{ backgroundColor: color }}
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-8 h-8 rounded border-2 border-amber-800 bg-slate-950 overflow-hidden flex items-center justify-center cursor-pointer hover:border-amber-400 transition-colors">
+                      <input 
+                        type="color" 
+                        value={hairColor} 
+                        onChange={(e) => setHairColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" 
                       />
-                    ))}
+                      <div className="w-6 h-6 rounded border border-black/20" style={{ backgroundColor: hairColor }} />
+                    </div>
+                    <span className="font-pixel text-[10px] text-amber-100 bg-slate-950 border border-amber-900 px-2 py-1 rounded min-w-[70px] text-center select-all">
+                      {hairColor.toUpperCase()}
+                    </span>
+                    <span className="text-[8px] text-amber-400/60 font-sans">← Click box to customize</span>
                   </div>
                 </div>
 
+                {/* Hairstyle */}
                 <div>
                   <label className="block font-silkscreen text-[10px] text-amber-200 mb-1">
                     Hairstyle Option
@@ -288,6 +297,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                   </div>
                 </div>
 
+                {/* Uniform Style */}
                 <div>
                   <label className="block font-silkscreen text-[10px] text-amber-200 mb-1">
                     Uniform Style

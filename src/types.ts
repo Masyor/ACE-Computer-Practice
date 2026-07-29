@@ -7,6 +7,7 @@ export interface PlayerCustomization {
   hairColor: string;
   spriteStyle: 'classic' | 'modern' | 'academic';
   hairStyle: 'short' | 'spiky' | 'ponytail' | 'bob' | 'curly';
+  catColor?: string;
 }
 
 export interface ResourceLink {
