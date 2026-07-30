@@ -48,19 +48,19 @@ export const ROOMS: DoorRoom[] = [
   },
   {
     id: 2,
-    name: 'The Exam Hall',
-    signLabel: 'Exam',
-    subtitle: 'Official Academic IELTS Mock Tests & Practice Drills',
+    name: 'The Vocab Hall',
+    signLabel: 'Vocabulary',
+    subtitle: 'Improve your Vobabulary to boost your IELTS score',
     color: '#e11d48', // Crimson Red
     icon: 'GraduationCap',
     getLinks: (stage: StageLevel): ResourceLink[] => {
       const generalExamLinks: ResourceLink[] = [
       {
-        title: 'ACE Writing Practice',
-        url: 'https://script.google.com/macros/s/AKfycbypLhYxTlrluyp3bnH11QQhFjKXSY-P8ioIOw4fg0r7IaaF-XyamCjgOo76YBor4WQ/exec',
-        description: '⭐ Featured App! Practice your IELTS writing in an authentic test environment.',
+        title: 'IELTS Driver',
+        url: 'https://masyor.github.io/IELTS-Driver',
+        description: '⭐ Featured App! Improve your vocabulary while testing your driving skills.',
         badge: '⭐ Featured App',
-        iconType: 'BookOpen'
+        iconType: 'Sparkles'
       },
         {
           title: 'Mini-IELTS Practice Vault',
