@@ -19,7 +19,9 @@ export const RoomModal: React.FC<RoomModalProps> = ({
 }) => {
   useEffect(() => {
     soundEngine.playDoorChime();
-    
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         soundEngine.playClose();

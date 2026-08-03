@@ -3,6 +3,7 @@
 class RetroSoundEngine {
   private ctx: AudioContext | null = null;
   public isMuted: boolean = false;
+  private lastDoorChimeTime: number = 0;
 
   private initCtx() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -78,6 +79,10 @@ class RetroSoundEngine {
   // Door enter chime sound
   public playDoorChime() {
     if (this.isMuted) return;
+    const nowMs = Date.now();
+    if (nowMs - this.lastDoorChimeTime < 1000) return; // Prevent repeated stuck chime
+    this.lastDoorChimeTime = nowMs;
+
     this.initCtx();
     if (!this.ctx) return;
 

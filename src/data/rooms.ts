@@ -17,40 +17,19 @@ export const ROOMS: DoorRoom[] = [
         iconType: 'Gamepad2'
       },
       {
-        title: 'TypingTest Trainer',
-        url: 'https://www.typingtest.com/trainer/',
-        description: 'Interactive touch typing course & speed exercises.',
-        badge: 'Top Rated',
+        title: 'IELTS Speed Racer',
+        url: 'https://masyor.github.io/IELTS-Speed-Racer',
+        description: '⭐ Featured Game! Fast-paced typing race to sharpen your speed, accuracy, and reflexes.',
+        badge: '⭐ Featured Game',
         iconType: 'Zap'
-      },
-      {
-        title: 'TypingStudy Lesson 1',
-        url: 'https://www.typingstudy.com/lesson/1',
-        description: 'Structured layout lessons for finger positioning.',
-        badge: 'Beginner',
-        iconType: 'BookOpen'
-      },
-      {
-        title: 'EdClub Typing Jungle',
-        url: 'https://www.edclub.com/sportal/program-3.game',
-        description: 'Gamified typing arcade & skill mastery levels.',
-        badge: 'Arcade',
-        iconType: 'Gamepad2'
-      },
-      {
-        title: 'Keybr Practice',
-        url: 'https://www.keybr.com/',
-        description: 'Smart adaptive typing engine based on error frequency.',
-        badge: 'Adaptive',
-        iconType: 'Cpu'
       }
     ]
   },
   {
     id: 2,
-    name: 'The Vocab Hall',
-    signLabel: 'Vocabulary',
-    subtitle: 'Improve your Vobabulary to boost your IELTS score',
+    name: 'The Vocab & Practice Hall',
+    signLabel: 'Vocab & Exam',
+    subtitle: 'Master essential IELTS vocabulary with driving arcade drills, practice sets & mock exams',
     color: '#e11d48', // Crimson Red
     icon: 'GraduationCap',
     getLinks: (stage: StageLevel): ResourceLink[] => {
