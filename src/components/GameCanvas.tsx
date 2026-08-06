@@ -748,6 +748,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const [showConsoleModal, setShowConsoleModal] = useState<boolean>(false);
   const [showWhiteboardModal, setShowWhiteboardModal] = useState<boolean>(false);
   const [whiteboardMessage, setWhiteboardMessage] = useState<string>('');
+  const [showJoystick, setShowJoystick] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+    }
+    return false;
+  });
 
   const WHITEBOARD_MESSAGES = [
     "IELTS Band 9 loading... ■■■■■■■■■□ 90%",
@@ -2013,101 +2019,119 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           className="w-full h-auto max-h-[80vh] aspect-[16/9] block pixelated bg-amber-950 cursor-pointer"
         />
 
-        {/* Floating Direction Controls Banner */}
-        <div className="absolute top-3 left-3 bg-amber-950/90 border-2 border-amber-700/80 px-3 py-1.5 rounded font-silkscreen text-[10px] text-amber-200 hidden sm:flex items-center gap-2 pointer-events-none shadow-md">
-          <span className="font-pixel text-[9px] text-amber-400">CONTROLS:</span>
-          <span>Arrow Keys / WASD to Move</span>
-          <span>•</span>
-          <span>[E] / Space to Interact</span>
-        </div>
-      </div>
-
-      {/* Touch D-Pad & Action Buttons Overlay for Mobile Devices */}
-      <div className="sm:hidden mt-3 flex items-center justify-between w-full max-w-md px-4">
-        
-        {/* D-Pad Grid */}
-        <div className="grid grid-cols-3 gap-1.5 w-36 h-36 bg-amber-950/90 border-2 border-amber-700 p-1.5 rounded-xl shadow-lg">
-          <div />
-          <button
-            onTouchStart={() => handleTouchStart('up')}
-            onTouchEnd={() => handleTouchEnd('up')}
-            onMouseDown={() => handleTouchStart('up')}
-            onMouseUp={() => handleTouchEnd('up')}
-            className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded flex items-center justify-center text-amber-100 font-pixel text-xs"
-          >
-            <MoveUp className="w-5 h-5" />
-          </button>
-          <div />
-
-          <button
-            onTouchStart={() => handleTouchStart('left')}
-            onTouchEnd={() => handleTouchEnd('left')}
-            onMouseDown={() => handleTouchStart('left')}
-            onMouseUp={() => handleTouchEnd('left')}
-            className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded flex items-center justify-center text-amber-100 font-pixel text-xs"
-          >
-            <MoveLeft className="w-5 h-5" />
-          </button>
-          <div className="bg-amber-900/50 rounded border border-amber-800 flex items-center justify-center text-[8px] font-pixel text-amber-400">
-            PAD
+        {/* Floating Direction Controls Banner & Joystick Toggle Button (Top Left) */}
+        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 pointer-events-auto">
+          <div className="bg-amber-950/90 border-2 border-amber-700/80 px-2.5 py-1.5 rounded font-silkscreen text-[9px] md:text-[10px] text-amber-200 flex items-center gap-2 shadow-md">
+            <span className="font-pixel text-[8px] md:text-[9px] text-amber-400">CONTROLS:</span>
+            <span className="hidden sm:inline">Arrow Keys / WASD to Move • [E] / Space</span>
+            <span className="sm:hidden">WASD / [E]</span>
           </div>
-          <button
-            onTouchStart={() => handleTouchStart('right')}
-            onTouchEnd={() => handleTouchEnd('right')}
-            onMouseDown={() => handleTouchStart('right')}
-            onMouseUp={() => handleTouchEnd('right')}
-            className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded flex items-center justify-center text-amber-100 font-pixel text-xs"
-          >
-            <MoveRight className="w-5 h-5" />
-          </button>
 
-          <div />
           <button
-            onTouchStart={() => handleTouchStart('down')}
-            onTouchEnd={() => handleTouchEnd('down')}
-            onMouseDown={() => handleTouchStart('down')}
-            onMouseUp={() => handleTouchEnd('down')}
-            className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded flex items-center justify-center text-amber-100 font-pixel text-xs"
+            onClick={() => {
+              soundEngine.playSelect();
+              setShowJoystick(prev => !prev);
+            }}
+            title="Toggle Touch Joystick / D-Pad"
+            className="bg-amber-950/90 hover:bg-amber-900 active:bg-amber-800 border-2 border-amber-600 px-2.5 py-1.5 rounded font-pixel text-[9px] md:text-[10px] text-amber-200 shadow-md flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <MoveDown className="w-5 h-5" />
+            <span>🎮</span>
+            <span>{showJoystick ? 'JOYSTICK: ON' : 'JOYSTICK: OFF'}</span>
           </button>
-          <div />
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-2">
-          {nearbyItem && (
-            <button
-              onClick={() => handleInteractWithItem(nearbyItem)}
-              className="retro-button px-4 py-3 rounded-xl font-pixel text-xs text-purple-100 bg-purple-900 border-2 border-purple-400 shadow-xl"
-            >
-              {nearbyItem.icon} {nearbyItem.name.toUpperCase()}
-            </button>
-          )}
+        {/* Touch D-Pad / Joystick overlay positioned at bottom-left corner of playable area */}
+        {showJoystick && (
+          <div className="absolute bottom-3 left-3 z-30 bg-amber-950/90 border-2 border-amber-600 p-1.5 rounded-2xl shadow-2xl backdrop-blur-xs select-none pointer-events-auto">
+            <div className="grid grid-cols-3 gap-1 w-28 h-28 md:w-32 md:h-32">
+              <div />
+              <button
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('up'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('up'); }}
+                onMouseDown={() => handleTouchStart('up')}
+                onMouseUp={() => handleTouchEnd('up')}
+                onMouseLeave={() => handleTouchEnd('up')}
+                className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded-lg flex items-center justify-center text-amber-100 font-pixel text-xs shadow select-none cursor-pointer"
+              >
+                <MoveUp className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+              <div />
 
-          {nearbyNPC && !nearbyRoom && (
-            <button
-              onClick={() => {
-                soundEngine.playTextBlip();
-                nearbyNPC.currentDialogueIdx = (nearbyNPC.currentDialogueIdx + 1) % nearbyNPC.dialogues.length;
-                setNearbyNPC({ ...nearbyNPC });
-              }}
-              className="retro-button px-4 py-3 rounded-xl font-pixel text-xs text-sky-100 bg-sky-900 border-2 border-sky-400 shadow-xl"
-            >
-              TALK [E] 💬
-            </button>
-          )}
+              <button
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('left'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('left'); }}
+                onMouseDown={() => handleTouchStart('left')}
+                onMouseUp={() => handleTouchEnd('left')}
+                onMouseLeave={() => handleTouchEnd('left')}
+                className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded-lg flex items-center justify-center text-amber-100 font-pixel text-xs shadow select-none cursor-pointer"
+              >
+                <MoveLeft className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+              <div className="bg-amber-900/60 rounded border border-amber-800 flex items-center justify-center text-[7px] md:text-[8px] font-pixel text-amber-400">
+                PAD
+              </div>
+              <button
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('right'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('right'); }}
+                onMouseDown={() => handleTouchStart('right')}
+                onMouseUp={() => handleTouchEnd('right')}
+                onMouseLeave={() => handleTouchEnd('right')}
+                className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded-lg flex items-center justify-center text-amber-100 font-pixel text-xs shadow select-none cursor-pointer"
+              >
+                <MoveRight className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
 
-          {nearbyRoom && (
-            <button
-              onClick={() => handleOpenRoom(nearbyRoom)}
-              className="retro-button px-5 py-3 rounded-xl font-pixel text-xs text-amber-100 bg-amber-900 border-2 border-amber-300 shadow-xl"
-            >
-              ENTER DOOR 🚪
-            </button>
-          )}
-        </div>
+              <div />
+              <button
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('down'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('down'); }}
+                onMouseDown={() => handleTouchStart('down')}
+                onMouseUp={() => handleTouchEnd('down')}
+                onMouseLeave={() => handleTouchEnd('down')}
+                className="bg-amber-800 active:bg-amber-600 border border-amber-500 rounded-lg flex items-center justify-center text-amber-100 font-pixel text-xs shadow select-none cursor-pointer"
+              >
+                <MoveDown className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+              <div />
+            </div>
+          </div>
+        )}
 
+        {/* Floating Action Buttons positioned at bottom-right corner of playable area */}
+        {(nearbyItem || (nearbyNPC && !nearbyRoom) || nearbyRoom) && (
+          <div className="absolute bottom-3 right-3 z-30 flex flex-col gap-2 pointer-events-auto">
+            {nearbyItem && (
+              <button
+                onClick={() => handleInteractWithItem(nearbyItem)}
+                className="retro-button px-3.5 py-2.5 rounded-xl font-pixel text-[10px] md:text-xs text-purple-100 bg-purple-900 border-2 border-purple-400 shadow-xl"
+              >
+                {nearbyItem.icon} {nearbyItem.name.toUpperCase()}
+              </button>
+            )}
+
+            {nearbyNPC && !nearbyRoom && (
+              <button
+                onClick={() => {
+                  soundEngine.playTextBlip();
+                  nearbyNPC.currentDialogueIdx = (nearbyNPC.currentDialogueIdx + 1) % nearbyNPC.dialogues.length;
+                  setNearbyNPC({ ...nearbyNPC });
+                }}
+                className="retro-button px-3.5 py-2.5 rounded-xl font-pixel text-[10px] md:text-xs text-sky-100 bg-sky-900 border-2 border-sky-400 shadow-xl"
+              >
+                TALK [E] 💬
+              </button>
+            )}
+
+            {nearbyRoom && (
+              <button
+                onClick={() => handleOpenRoom(nearbyRoom)}
+                className="retro-button px-4 py-2.5 rounded-xl font-pixel text-[10px] md:text-xs text-amber-100 bg-amber-900 border-2 border-amber-300 shadow-xl"
+              >
+                ENTER DOOR 🚪
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Dropped Game Console Popup Modal */}

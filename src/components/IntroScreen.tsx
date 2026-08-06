@@ -72,7 +72,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
         {/* Header Ribbon */}
         <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-amber-600 border-2 border-amber-300 text-amber-100 px-6 py-1 font-pixel text-xs tracking-wider rounded shadow-md uppercase flex items-center gap-2">
           <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-          <span>ACE COMPUTER PRACTICE ADMISSION</span>
+          <span>ACE COMPUTER PRACTICE</span>
         </div>
 
         {/* Dialogue Box Area */}
@@ -127,14 +127,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                   key={lvl}
                   type="button"
                   onClick={() => handleStageSelect(lvl)}
-                  className={`retro-button p-4 rounded flex flex-col items-center justify-center gap-2 cursor-pointer transition-transform ${
-                    stage === lvl ? 'scale-105 border-amber-200' : ''
+                  className={`retro-button h-16 w-full p-4 rounded flex items-center justify-center cursor-pointer transition-colors ${
+                    stage === lvl ? 'border-amber-200 bg-amber-800' : ''
                   }`}
                 >
                   <span className="font-pixel text-sm text-amber-100">{lvl}</span>
-                  <span className="font-silkscreen text-[10px] text-amber-200/80">
-                    {lvl === 'GEP 11A' ? 'Foundations' : lvl === 'GEP 11B' ? 'Intermediate' : 'Advanced & IELTS'}
-                  </span>
                 </button>
               ))}
             </div>
